@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detailers Movement — Video Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ===================================================================
+     FONT — theo Brand Guideline DMI:
+     • Montserrat: CHỈ dùng cho tên brand "DETAILERS MOVEMENT" + watermark
+       (font free, lấy thẳng từ Google Fonts, không cần thay thế).
+     • SVN-Gilroy: dùng cho toàn bộ tiêu đề/nội dung còn lại — đây là font
+       trả phí (bản Việt hoá của Gilroy), CHƯA có file thật nên đang tạm
+       dùng Poppins (form chữ khá gần Gilroy) thay thế.
+       Khi có file .woff2 SVN-Gilroy thật, thêm @font-face y hệt kiểu bên
+       Apeax (đặt file cùng thư mục với file .html này), rồi đổi hết
+       font-family:'Poppins' bên dưới thành 'SVN-Gilroy' là xong.
+     =================================================================== */
+  :root{
+    --bg: #060911;
+    --bg-elev: #0d1424;
+    --text: #f4f6fb;
+    --text-dim: #9aa5bd;
+    --text-faint: #4a5170;
+    --line: rgba(255,255,255,0.09);
+    --c1: #0118d8;
+    --c2: #1f61e5;
+    --c3: #00a3e1;
+    --c4: #03d8e8;
+    --grad: linear-gradient(120deg, var(--c1) 0%, var(--c2) 35%, var(--c3) 70%, var(--c4) 100%);
+    --ease: cubic-bezier(.22,1,.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  .section-inner{max-width:1180px;margin:0 auto;padding:0 40px;}
+  section{padding:130px 0;}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease), transform .8s var(--ease);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  ::selection{background:var(--c3);color:#02040a;}
+
+  #progress-bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:var(--line);}
+  #progress-bar::after{content:'';position:absolute;top:0;left:0;bottom:0;width:var(--scroll-pct,0%);background:var(--grad);transition:width .05s linear;}
+
+  /* ---------- Nav ---------- */
+  header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:26px 40px;z-index:40;}
+  header::before{
+    content:'';
+    position:absolute;top:0;left:0;right:0;height:100px;
+    background:linear-gradient(to bottom,
+      var(--bg) 0%,
+      var(--bg) 30%,
+      rgba(6,9,17,0.65) 60%,
+      rgba(6,9,17,0) 100%
+    );
+    -webkit-backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px);
+    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 40%, transparent 100%);
+    mask-image:linear-gradient(to bottom, #000 0%, #000 40%, transparent 100%);
+    z-index:-1;pointer-events:none;
+  }
+  .logo{font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;letter-spacing:0.02em;}
+  .logo span{color:var(--c4);}
+  .nav-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);letter-spacing:0.05em;}
+  .back-link{position:fixed;top:26px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:0.08em;z-index:39;display:none;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:150px 40px 60px;overflow:hidden;}
+  .hero-grid{max-width:1180px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.25fr 1fr;gap:50px;align-items:center;}
+  .client-tag{display:inline-flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);background:var(--bg-elev);border:1px solid var(--line);padding:8px 14px;margin-bottom:26px;}
+  .client-tag .dot{width:7px;height:7px;border-radius:50%;background:var(--grad);}
+  .hero-title{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(40px,6.4vw,84px);line-height:0.98;letter-spacing:-0.01em;text-transform:uppercase;}
+  .hero-title .fade{-webkit-text-stroke:1.5px var(--text-faint);color:transparent;}
+  .hero-meta{display:flex;gap:48px;margin-top:44px;padding-top:22px;border-top:1px solid var(--line);}
+  .hero-meta div{display:flex;flex-direction:column;gap:6px;}
+  .hero-meta .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);}
+  .hero-meta .v{font-size:14px;color:var(--text-dim);}
+  .scroll-cue{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);}
+
+  /* ---------- Hero mark: icon hiện lên 1 lần rồi glow nhẹ liên tục ---------- */
+  .hero-mark-wrap{position:relative;width:100%;aspect-ratio:1/1;max-width:340px;margin:0 auto;}
+  .hero-mark-reveal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .hero-mark-reveal .hero-icon{
+    width:160px;height:auto;
+    opacity:0;transform:scale(.88);
+    filter:drop-shadow(0 0 30px rgba(31,97,229,0.5)) drop-shadow(0 0 60px rgba(3,216,232,0.25));
+    animation:hero-icon-in 1.3s var(--ease) forwards, hero-icon-glow 4.5s ease-in-out infinite 1.3s;
+  }
+  @keyframes hero-icon-in{
+    to{opacity:1;transform:scale(1);}
+  }
+  @keyframes hero-icon-glow{
+    0%,100%{filter:drop-shadow(0 0 30px rgba(31,97,229,0.5)) drop-shadow(0 0 60px rgba(3,216,232,0.25));}
+    50%{filter:drop-shadow(0 0 46px rgba(31,97,229,0.68)) drop-shadow(0 0 88px rgba(3,216,232,0.38));}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero-mark-reveal .hero-icon{animation:none;opacity:1;transform:none;filter:drop-shadow(0 0 30px rgba(31,97,229,0.5));}
+  }
+
+  /* ---------- Logo Ngang & Giữa: cùng 1 kiểu fade nhẹ, lặp vô hạn ---------- */
+  .logo-slot svg.soft-fade{opacity:0;animation:soft-fade-cycle 8s var(--ease) infinite;}
+  .logo-slot svg.ngang-fade{width:58%;height:auto;}
+  .logo-slot svg.giua-fade{width:36%;height:auto;}
+  @keyframes soft-fade-cycle{
+    0%{opacity:0;transform:scale(.9);} 30%{opacity:0;transform:scale(.9);}
+    50%{opacity:1;transform:scale(1);} 82%{opacity:1;transform:scale(1);}
+    95%{opacity:0;transform:scale(1.02);} 100%{opacity:0;transform:scale(.9);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .logo-slot svg.soft-fade{animation:none;opacity:1;transform:none;}
+  }
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-mark-wrap{order:-1;max-width:230px;margin-bottom:8px;}
+    .hero{padding:130px 24px 40px;}
+    .hero-meta{gap:28px;flex-wrap:wrap;}
+  }
+
+  /* ---------- Eyebrow / section heading ---------- */
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:9px;}
+  .eyebrow::before{content:'';width:14px;height:1px;background:var(--grad);}
+  .eyebrow{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .eyebrow::before{-webkit-text-fill-color:initial;}
+
+  /* ---------- Overview / Brief ---------- */
+  .brief{display:grid;grid-template-columns:1.3fr 1fr;gap:70px;}
+  .brief p{font-size:clamp(17px,1.6vw,21px);line-height:1.6;color:var(--text-dim);max-width:56ch;}
+  .spec-list{display:flex;flex-direction:column;}
+  .spec-row{display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .spec-row:first-child{padding-top:0;}
+  .spec-row .k{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:0.1em;text-transform:uppercase;}
+  .spec-row .v{color:var(--text-dim);text-align:right;}
+  @media (max-width:820px){ .brief{grid-template-columns:1fr;gap:40px;} }
+
+  /* ---------- Logo & Usage: 2 biến thể logo thật (Ngang / Giữa), cả hai nền tối ---------- */
+  .logo-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:36px;}
+  .logo-slot{position:relative;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;background:var(--bg-elev);border:1px solid var(--line);overflow:hidden;}
+  .slot-label{position:absolute;bottom:14px;left:16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-faint);}
+  @media (max-width:640px){ .logo-grid{grid-template-columns:1fr;} }
+
+  /* ---------- Logo & Usage: block icon (construction circles + glow icon) ---------- */
+  .logo-feature{display:grid;grid-template-columns:1.2fr 1fr;gap:50px;align-items:center;margin-top:2px;background:var(--bg-elev);border:1px solid var(--line);padding:48px;}
+  .logo-feature h4{font-family:'Poppins',sans-serif;font-weight:600;font-size:20px;margin-bottom:14px;}
+  .logo-feature p{font-size:14px;line-height:1.7;color:var(--text-dim);max-width:46ch;}
+  .logo-feature-icon{position:relative;width:100%;max-width:220px;aspect-ratio:1/1;margin:0 auto;}
+  .logo-feature-icon .feat-icon{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.88);
+    width:48%;height:auto;opacity:0;
+    filter:drop-shadow(0 0 30px rgba(31,97,229,0.5)) drop-shadow(0 0 60px rgba(3,216,232,0.25));
+    animation:feat-icon-in 1.3s var(--ease) forwards, feat-icon-glow 4.5s ease-in-out infinite 1.3s;
+  }
+  @keyframes feat-icon-in{
+    to{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  }
+  @keyframes feat-icon-glow{
+    0%,100%{filter:drop-shadow(0 0 30px rgba(31,97,229,0.5)) drop-shadow(0 0 60px rgba(3,216,232,0.25));}
+    50%{filter:drop-shadow(0 0 46px rgba(31,97,229,0.68)) drop-shadow(0 0 88px rgba(3,216,232,0.38));}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .logo-feature-icon .feat-icon{animation:none;opacity:1;transform:translate(-50%,-50%);filter:drop-shadow(0 0 30px rgba(31,97,229,0.5));}
+  }
+  @media (max-width:820px){
+    .logo-feature{grid-template-columns:1fr;gap:28px;padding:32px;text-align:center;}
+    .logo-feature p{margin:0 auto;}
+    .logo-feature-icon{order:2;max-width:180px;}
+    .logo-feature-text{order:1;}
+  }
+
+  /* ---------- Brand Colors ---------- */
+  .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-top:36px;}
+  .color-chip{aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.6;}
+  .color-chip .name{font-size:11px;font-weight:500;margin-bottom:4px;}
+  @media (max-width:820px){ .color-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:480px){ .color-grid{grid-template-columns:repeat(2,1fr);} }
+
+  /* ---------- Typography ---------- */
+  .type-block{margin-top:56px;}
+  .type-block:first-child{margin-top:36px;}
+  .type-block-head{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .type-block-head b{color:var(--text);}
+  .type-samples{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
+  .type-samples.cols-3{grid-template-columns:repeat(3,1fr);}
+  .type-sample{background:var(--bg-elev);border:1px solid var(--line);padding:22px 18px;}
+  .weight-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:14px;}
+  .sample-line{font-size:26px;margin-bottom:6px;}
+  .sample-nums{font-size:14px;color:var(--text-dim);margin-bottom:12px;}
+  .sample-para{font-size:11px;line-height:1.6;color:var(--text-faint);}
+  .type-note{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);line-height:1.6;}
+  @media (max-width:820px){ .type-samples{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .type-samples{grid-template-columns:1fr;} }
+
+  /* ---------- Marquee tape banner ---------- */
+  .marquee-band{width:100%;background:var(--bg-elev);overflow:hidden;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .marquee-track{display:flex;width:max-content;animation:marquee-scroll 26s linear infinite;}
+  .marquee-track span{display:inline-flex;align-items:center;font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(15px,2vw,20px);color:#ffffff;text-transform:uppercase;letter-spacing:0.02em;white-space:nowrap;padding:0 28px;}
+  .marquee-track span::after{content:'—';margin-left:28px;color:var(--c3);}
+  @keyframes marquee-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  @media (prefers-reduced-motion: reduce){ .marquee-track{animation:none;} }
+
+  /* ---------- Horizontal reels (Films) ---------- */
+  .reel{margin-bottom:12vh;}
+  .reel:last-child{margin-bottom:0;}
+  .reel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px;}
+  .reel-index{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--c3);letter-spacing:0.1em;}
+  .reel-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:clamp(19px,2.1vw,25px);}
+  .reel-duration{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-faint);}
+  .reel-frame{
+    position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);overflow:hidden;
+    background:var(--bg-elev);
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color .3s var(--ease);
+  }
+  .reel-frame:hover{border-image:var(--grad) 1;}
+  .play-icon{width:60px;height:60px;border:1px solid var(--text-faint);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-dim);}
+  .play-icon svg{width:16px;height:16px;margin-left:2px;}
+  .reel-caption{display:flex;justify-content:space-between;margin-top:14px;font-size:13px;color:var(--text-dim);padding-top:14px;border-top:1px solid var(--line);}
+  .reel-caption .note{max-width:60%;}
+  .reel-caption .tags{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);text-align:right;}
+  @media (max-width:640px){
+    .reel-caption{flex-direction:column;gap:8px;}
+    .reel-caption .note{max-width:100%;}
+    .reel-caption .tags{text-align:left;}
+  }
+
+  /* ---------- Vertical reels (Social Cuts) ---------- */
+  .vertical-strip{display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;}
+  .v-card{flex:0 0 auto;width:190px;}
+  .v-frame{
+    position:relative;width:100%;aspect-ratio:9/16;border:1px solid var(--line);overflow:hidden;
+    background:var(--bg-elev);display:flex;align-items:center;justify-content:center;
+    transition:border-color .3s var(--ease);
+  }
+  .v-frame:hover{border-image:var(--grad) 1;}
+  .v-frame .play-icon{width:42px;height:42px;}
+  .v-frame .play-icon svg{width:13px;height:13px;}
+  .v-caption{margin-top:10px;}
+  .v-caption .v-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;}
+  .v-caption .v-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-top:3px;}
+
+  /* ---------- Footer / CTA ---------- */
+  footer{padding:130px 40px 40px;}
+  .cta{max-width:1180px;margin:0 auto;text-align:center;}
+  .cta h3{font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(26px,3.6vw,44px);max-width:14ch;margin:0 auto 34px;}
+  .cta-links{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;font-size:14px;color:var(--text-dim);}
+  .cta-links a{border-bottom:1px solid var(--line);padding-bottom:3px;transition:border-color .3s var(--ease), color .3s var(--ease);}
+  .cta-links a:hover{color:var(--c3);border-color:var(--c3);}
+  .foot-bottom{max-width:1180px;margin:70px auto 0;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:0.05em;}
+</style>
+<style>
+  /* ===== Page transition (chuyển cảnh giữa các trang) — thêm mới, không ảnh hưởng CSS sẵn có ===== */
+  #page-fade{
+    position:fixed;inset:0;z-index:9999;pointer-events:none;
+    background-color:#060911;
+    opacity:0;
+    transition:opacity .55s ease, background-color .45s ease;
+  }
+  #page-fade.cover{opacity:1;}
+  @media (prefers-reduced-motion: reduce){
+    #page-fade{transition:none;}
+  }
+</style>
+<style>
+  /* ================= Video: thumbnail + phát inline + lightbox dọc (thêm mới) ================= */
+
+  /* --- Video ngang: ảnh thumbnail YouTube phủ kín khung --- */
+  .reel-frame{cursor:pointer;}
+  .reel-thumb{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    display:none;z-index:1;
+  }
+  .reel-frame.has-thumb .reel-thumb{display:block;}
+  .reel-frame .play-icon{position:relative;z-index:2;transition:transform .3s var(--ease), background .3s var(--ease);}
+  .reel-frame.has-thumb .play-icon{
+    background:rgba(0,0,0,.42);border-color:rgba(255,255,255,.75);color:#fff;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+  }
+  .reel-frame:hover .play-icon{transform:scale(1.08);background:var(--c3);border-color:var(--c3);color:#02040a;}
+  /* khi đang phát: ẩn ảnh + nút play, chỉ còn iframe */
+  .reel-frame.playing .reel-thumb,
+  .reel-frame.playing .play-icon{display:none;}
+  .reel-player{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:3;}
+
+  /* ---------- Video 01: Showreel tổng quan — làm nổi bật hẳn để xem trước tiên ----------
+     Khung rộng 21:9 đúng tỉ lệ file gốc (5150×2160), viền gradient thương hiệu luôn hiện
+     (không cần hover), nút play to + có vòng sáng lan toả, kèm nhãn "Watch First". */
+  .reel.feature .reel-frame{
+    aspect-ratio:21/9;
+    border:1px solid transparent;
+    background-image:linear-gradient(var(--bg-elev),var(--bg-elev)), var(--grad);
+    background-origin:border-box;
+    background-clip:padding-box, border-box;
+    box-shadow:0 0 80px -16px rgba(0,163,225,.4);
+  }
+  .reel.feature .reel-title{
+    font-size:clamp(23px,2.7vw,32px);
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .feature-badge{
+    position:absolute;top:18px;left:18px;z-index:2;
+    display:flex;align-items:center;gap:7px;
+    padding:7px 13px;border-radius:999px;
+    background:rgba(6,9,17,.55);border:1px solid rgba(255,255,255,.16);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.09em;
+    text-transform:uppercase;color:#fff;
+  }
+  .feature-badge::before{
+    content:'';width:6px;height:6px;flex:none;border-radius:50%;background:var(--grad);
+    box-shadow:0 0 8px 1px var(--c3);
+  }
+  .reel-frame.playing .feature-badge{display:none;}
+
+  /* ---------- Badge cho video AI + nhãn ngăn cách nhóm nội dung ---------- */
+  .ai-badge{
+    position:absolute;top:18px;left:18px;z-index:2;
+    display:flex;align-items:center;gap:7px;
+    padding:6px 12px;border-radius:999px;
+    background:rgba(6,9,17,.55);border:1px solid rgba(255,255,255,.16);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.09em;
+    text-transform:uppercase;color:#fff;
+  }
+  .ai-badge::before{content:'✦';color:var(--c3);font-size:11px;line-height:1;}
+  .reel-frame.playing .ai-badge{display:none;}
+
+  .group-label{
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--text-faint);padding-bottom:14px;margin:0 0 6vh;border-bottom:1px solid var(--line);
+  }
+  .group-label b{color:var(--text-dim);font-weight:500;}
+  .reel + .group-label, .vertical-strip + .group-label{margin-top:11vh;}
+  .reel.feature .play-icon{
+    position:relative;width:82px;height:82px;
+    background:rgba(0,0,0,.35);border-color:rgba(255,255,255,.8);
+  }
+  .reel.feature .play-icon svg{width:22px;height:22px;}
+  .reel.feature .play-icon::after{
+    content:'';position:absolute;inset:-14px;border-radius:50%;
+    border:1px solid rgba(0,163,225,.55);
+    animation:pulse-ring 2.4s ease-out infinite;
+  }
+  @keyframes pulse-ring{
+    0%{transform:scale(.85);opacity:.9;}
+    100%{transform:scale(1.35);opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){ .reel.feature .play-icon::after{animation:none;} }
+  @media (max-width:640px){
+    .feature-badge{font-size:9.5px;padding:6px 11px;top:12px;left:12px;}
+    .reel.feature .play-icon{width:64px;height:64px;}
+    .reel.feature .play-icon svg{width:17px;height:17px;}
+  }
+
+  /* ---------- Video 03: bố cục khác biệt — chữ bên trái, khung video 3:4 bên phải ----------
+     Dùng flexbox thay vì grid 2 cột: chữ giữ đúng bề rộng nó cần, video giữ đúng
+     kích thước nó cần, khoảng trống (nếu có) chỉ nằm GIỮA hai bên chứ không tạo
+     ra một cột chết dính liền cạnh video như bản grid trước. */
+  .reel.split .split-body{display:flex;align-items:center;justify-content:space-between;gap:56px;flex-wrap:wrap;}
+  .reel.split .split-text{flex:1 1 320px;max-width:360px;display:flex;flex-direction:column;gap:14px;}
+  .reel.split .reel-frame{flex:0 1 500px;max-width:560px;aspect-ratio:3/4;}
+  .reel.split .split-head{display:flex;align-items:baseline;gap:16px;}
+  .reel.split .split-text .reel-title{
+    display:block;font-family:'Poppins',sans-serif;font-weight:600;font-size:clamp(19px,2.1vw,25px);
+  }
+  .reel.split .split-text .note{
+    display:block;font-size:15px;line-height:1.65;color:var(--text-dim);max-width:36ch;margin-top:2px;
+  }
+  .reel.split .split-text .tags{
+    display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--text-faint);
+  }
+  @media (max-width:820px){
+    /* Điện thoại: xếp dọc, video lên trước cho giống nhịp mấy video kia, chữ xuống dưới */
+    .reel.split .split-body{flex-direction:column;gap:16px;}
+    .reel.split .reel-frame{flex:none;max-width:100%;order:-1;}
+    .reel.split .split-text{flex:none;max-width:100%;margin-top:2px;padding-top:14px;border-top:1px solid var(--line);}
+    .reel.split .split-text .note{max-width:100%;}
+  }
+
+  /* --- Video dọc: thumbnail trong card --- */
+  .v-frame{cursor:pointer;}
+  .v-thumb{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    display:none;z-index:1;
+  }
+  .v-frame.has-thumb .v-thumb{display:block;}
+  .v-frame .play-icon{position:relative;z-index:2;transition:transform .3s var(--ease), background .3s var(--ease);}
+  .v-frame.has-thumb .play-icon{
+    background:rgba(0,0,0,.42);border-color:rgba(255,255,255,.75);color:#fff;
+  }
+  .v-frame:hover .play-icon{transform:scale(1.08);background:var(--c3);border-color:var(--c3);color:#02040a;}
+
+  /* --- Lightbox cho video dọc (9:16) --- */
+  #vlightbox{
+    display:none;position:fixed;inset:0;z-index:150;
+    background:rgba(3,5,10,.95);
+    align-items:center;justify-content:center;
+    padding:40px;
+  }
+  #vlightbox.open{display:flex;}
+  #vlightbox .vlb-stage{
+    position:relative;height:min(84vh,860px);aspect-ratio:9/16;
+    background:#000;border:1px solid rgba(255,255,255,.16);
+    box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;
+  }
+  #vlightbox .vlb-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  #vlightbox .vlb-empty{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:26px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;letter-spacing:.04em;color:rgba(255,255,255,.65);
+  }
+  #vlightbox .vlb-close{
+    position:absolute;top:28px;right:36px;
+    font-family:'JetBrains Mono',monospace;font-size:13px;color:#fff;
+    letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+    display:flex;align-items:center;gap:8px;z-index:2;
+  }
+  #vlightbox .vlb-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:48px;height:48px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.3);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:18px;cursor:pointer;z-index:2;
+    transition:background .2s var(--ease), border-color .2s var(--ease);
+  }
+  #vlightbox .vlb-nav:hover{background:rgba(255,255,255,.12);border-color:#fff;}
+  #vlightbox .vlb-prev{left:24px;}
+  #vlightbox .vlb-next{right:24px;}
+  #vlightbox .vlb-caption{
+    position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:rgba(255,255,255,.65);
+    letter-spacing:.1em;text-align:center;z-index:2;
+  }
+  @media (max-width:640px){
+    #vlightbox{flex-direction:column;padding:70px 14px 20px;gap:22px;}
+    #vlightbox .vlb-stage{height:auto;width:100%;max-height:62vh;}
+    #vlightbox .vlb-controls{display:flex;align-items:center;justify-content:center;gap:22px;}
+    #vlightbox .vlb-nav{position:static;transform:none;width:44px;height:44px;font-size:16px;background:rgba(255,255,255,.08);}
+    #vlightbox .vlb-caption{position:static;transform:none;}
+  }
+</style>
+
+<style>
+  /* ================= Con trỏ chuột tuỳ biến + chữ sáng dần theo nhịp cuộn =================
+     Khối này thêm mới hoàn toàn, không sửa gì trong CSS/JS sẵn có của trang.
+     Màu con trỏ lấy theo tông của chính trang này, nên chuyển trang là nó đổi màu theo. */
+  :root{ --cf:244,246,251; --cur-accent:rgba(0,163,225,.55); }
+
+  /* mặc định ẩn hẳn — chỉ máy có chuột thật mới bật */
+  #cur-ring,#cur-dot{display:none;}
+
+  @media (hover:hover) and (pointer:fine){
+    body,a,button,[onclick],.reel-frame,.v-frame,.pg-cell,.frame,
+    .plb-close,.plb-nav,.lb-close,.lb-nav,.vlb-close,.vlb-nav,.pg-close,
+    input,textarea,select{cursor:none !important;}
+
+    /* Khi con trỏ đi vào vùng iframe YouTube đang phát thì trả lại chuột thật —
+       trong iframe không phát sự kiện chuột ra ngoài, để nguyên là con trỏ tự vẽ
+       sẽ đứng chết ở mép khung video. */
+    body.native-cursor,body.native-cursor *{cursor:auto !important;}
+    body.native-cursor #cur-ring,body.native-cursor #cur-dot{opacity:0 !important;}
+
+    #cur-ring,#cur-dot{
+      display:block;position:fixed;top:0;left:0;
+      z-index:10000;              /* trên cả lớp phủ chuyển trang (9999) */
+      pointer-events:none;border-radius:50%;opacity:0;will-change:transform;
+    }
+    body.cur-on #cur-ring, body.cur-on #cur-dot{opacity:1;}
+
+    #cur-dot{
+      width:5px;height:5px;margin:-2.5px 0 0 -2.5px;background:rgb(var(--cf));
+      transition:opacity .25s var(--ease),transform .25s var(--ease);
+    }
+    #cur-ring{
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      width:36px;height:36px;margin:-18px 0 0 -18px;
+      border:1px solid rgba(var(--cf),.5);background:rgba(var(--cf),.04);
+      transition:width .42s var(--ease),height .42s var(--ease),margin .42s var(--ease),
+                 background-color .42s var(--ease),border-color .42s var(--ease),opacity .3s var(--ease);
+    }
+    #cur-label{
+      font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;
+      text-transform:uppercase;color:rgb(var(--cf));line-height:1.5;white-space:nowrap;
+      opacity:0;transform:scale(.8);
+      transition:opacity .3s var(--ease),transform .3s var(--ease);
+    }
+    #cur-ring.has-label #cur-label{opacity:1;transform:scale(1);}
+
+    #cur-ring.is-hint{width:78px;height:78px;margin:-39px 0 0 -39px;border-color:rgba(var(--cf),.3);}
+    #cur-ring.is-view,#cur-ring.is-play{
+      width:86px;height:86px;margin:-43px 0 0 -43px;
+      border-color:transparent;background:var(--cur-accent);
+      -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);
+    }
+    #cur-ring.is-link{width:56px;height:56px;margin:-28px 0 0 -28px;border-color:rgba(var(--cf),.78);}
+    #cur-dot.hide-dot{opacity:0 !important;}
+    #cur-dot.is-down{transform:scale(2.2);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #cur-ring,#cur-dot{display:none;}
+    body{cursor:auto;}
+  }
+
+  /* Chữ mờ sẵn, sáng dần lên khi trôi từ đáy màn hình lên trên */
+  .rt .w{opacity:.16;transition:opacity .25s linear;}
+  @media (prefers-reduced-motion: reduce){ .rt .w{opacity:1 !important;transition:none;} }
+</style>
+</head>
+<body>
+<div id="page-fade"></div>
+<script>
+  /* Phủ ngay lập tức bằng đúng màu nền trang (chạy trước khi trình duyệt vẽ nội dung),
+     để lúc vào trang không bị "nháy" nội dung rồi mới có hiệu ứng.
+     Nếu người dùng tắt JS, lớp phủ này không bao giờ bật -> trang vẫn xem bình thường. */
+  document.getElementById('page-fade').classList.add('cover');
+</script>
+
+
+  <!-- Gradient dùng chung cho mọi hiệu ứng vẽ nét trên trang (không hiển thị, chỉ để tham chiếu url(#...)) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="dmiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0118d8"/>
+        <stop offset="45%" stop-color="#1f61e5"/>
+        <stop offset="75%" stop-color="#00a3e1"/>
+        <stop offset="100%" stop-color="#03d8e8"/>
+      </linearGradient>
+      <linearGradient id="dmiStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1f61e5"/>
+        <stop offset="100%" stop-color="#03d8e8"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div id="progress-bar"></div>
+  <header>
+    <a href="../index.html" data-pt="#000000" style="text-decoration:none;color:inherit;" aria-label="Back to home"><div class="logo">CLOUD<span>.</span></div></a>
+    <div class="nav-time mono" id="nav-time">00%</div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="client-tag reveal"><span class="dot"></span>Client — Detailers Movement</div>
+        <h1 class="hero-title reveal">
+          OWNED <span class="fade">BY</span><br>
+          YOU, DRIVEN<br>
+          <span class="fade">BY</span> US
+        </h1>
+        <div class="hero-meta reveal">
+          <div><span class="k">Project</span><span class="v">Detailers Movement</span></div>
+          <div><span class="k">Year</span><span class="v">2026</span></div>
+          <div><span class="k">&nbsp;</span><span class="scroll-cue">Scroll down</span></div>
+        </div>
+      </div>
+
+      <!-- Icon DMI thật, hiện lên 1 lần rồi glow nhẹ nhàng liên tục -->
+      <div class="hero-mark-wrap reveal">
+        <div class="hero-mark-reveal">
+          <svg class="hero-icon" viewBox="0 0 417 512" xmlns="http://www.w3.org/2000/svg">
+            <g transform="matrix(1,0,0,1,-191.707,-144.17)">
+        <g transform="matrix(50.775303,229.08548,229.08548,-50.775303,283.091654,396.440912)">
+            <path d="M0.022,0.294C0.018,0.275 0.015,0.256 0.012,0.236C-0.006,0.101 0.011,-0.032 0.055,-0.153C0.095,-0.262 0.157,-0.362 0.237,-0.445C0.554,-0.474 0.856,-0.329 1.036,-0.078C1.062,-0.042 1.043,0.008 1,0.018L0.293,0.174C0.267,0.18 0.232,0.192 0.197,0.216C0.185,0.224 0.101,0.284 0.082,0.396C0.075,0.438 0.083,0.476 0.088,0.5C0.085,0.492 0.053,0.407 0.05,0.399C0.04,0.37 0.032,0.34 0.025,0.31C0.024,0.305 0.023,0.299 0.022,0.294Z" style="fill:url(#icon__Linear1);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(127.704277,-233.98169,-233.98169,-127.704277,254.724878,482.174827)">
+            <path d="M1.017,0.038C0.988,0.08 0.955,0.118 0.92,0.152C0.78,0.285 0.595,0.36 0.404,0.365C0.267,0.37 0.127,0.339 -0.002,0.268C-0.03,0.253 -0.056,0.237 -0.081,0.219C-0.083,0.218 -0.082,0.215 -0.08,0.215C0.02,0.207 0.117,0.178 0.205,0.131C0.306,0.077 0.394,-0 0.46,-0.099C0.47,-0.113 0.479,-0.128 0.487,-0.143C0.489,-0.147 0.492,-0.151 0.494,-0.155C0.507,-0.179 0.518,-0.203 0.529,-0.228C0.531,-0.235 0.534,-0.241 0.536,-0.248C0.545,-0.272 0.553,-0.297 0.559,-0.322C0.567,-0.351 0.6,-0.365 0.627,-0.35L1.051,-0.119C1.075,-0.106 1.085,-0.075 1.072,-0.051L1.065,-0.038C1.05,-0.011 1.034,0.014 1.017,0.038Z" style="fill:url(#icon__Linear2);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(-221.880249,158.139542,158.139542,221.880249,610.557626,453.052096)">
+            <path d="M-0.043,-0.083C0.078,-0.041 0.21,-0.03 0.34,-0.052C0.408,-0.064 0.476,-0.084 0.541,-0.115C0.556,-0.122 0.571,-0.129 0.586,-0.137C0.606,-0.148 0.626,-0.16 0.646,-0.173C0.654,-0.179 0.662,-0.184 0.67,-0.19C0.684,-0.2 0.698,-0.21 0.711,-0.221C0.722,-0.23 0.732,-0.239 0.742,-0.248C0.749,-0.254 0.756,-0.26 0.762,-0.266C0.77,-0.274 0.778,-0.281 0.785,-0.289L0.803,-0.309C0.812,-0.318 0.827,-0.318 0.835,-0.307L1.1,0.065C1.11,0.078 1.112,0.096 1.107,0.111C1.102,0.128 1.089,0.138 1.075,0.148C1.047,0.167 1.019,0.188 0.989,0.205C0.951,0.227 0.909,0.244 0.867,0.258C0.746,0.301 0.619,0.311 0.496,0.292C0.303,0.262 0.122,0.157 0.001,-0.013L-0.051,-0.085C-0.048,-0.084 -0.046,-0.083 -0.043,-0.083Z" style="fill:url(#icon__Linear3);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(259.783295,-132.269211,-132.269211,-259.783295,509.199458,374.0784)">
+            <path d="M0.518,0.613C0.324,0.665 0.166,0.601 0.052,0.47C0.041,0.457 0.032,0.442 0.024,0.427L-0.281,-0.172C-0.308,-0.225 -0.357,-0.263 -0.415,-0.272C-0.44,-0.276 -0.465,-0.277 -0.49,-0.273C-0.515,-0.269 -0.539,-0.261 -0.562,-0.249C-0.569,-0.246 -0.573,-0.244 -0.579,-0.24C-0.571,-0.246 -0.563,-0.252 -0.554,-0.258C-0.548,-0.263 -0.541,-0.268 -0.533,-0.273C-0.523,-0.28 -0.512,-0.286 -0.501,-0.293C-0.487,-0.301 -0.473,-0.309 -0.459,-0.316C-0.45,-0.32 -0.442,-0.324 -0.434,-0.328C-0.414,-0.338 -0.394,-0.346 -0.373,-0.353C-0.359,-0.359 -0.344,-0.364 -0.329,-0.368C-0.265,-0.387 -0.199,-0.397 -0.134,-0.398C-0.012,-0.4 0.109,-0.372 0.215,-0.317C0.218,-0.316 0.22,-0.315 0.222,-0.313L0.633,0.494C0.648,0.524 0.636,0.561 0.606,0.576C0.578,0.591 0.548,0.605 0.518,0.613Z" style="fill:url(#icon__Radial4);fill-rule:nonzero;"/>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="icon__Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,0.02563)"><stop offset="0" style="stop-color:rgb(25,52,242);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(31,150,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(33,217,246);stop-opacity:1"/></linearGradient>
+        <linearGradient id="icon__Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,0.004855)"><stop offset="0" style="stop-color:rgb(41,168,246);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(54,112,247);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(68,53,249);stop-opacity:1"/></linearGradient>
+        <linearGradient id="icon__Linear3" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,-0.007092)"><stop offset="0" style="stop-color:rgb(17,143,244);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(21,182,244);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(25,226,245);stop-opacity:1"/></linearGradient>
+        <radialGradient id="icon__Radial4" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.469186,-0.172814,-0.147565,-1.254533,-0.469186,0.437708)"><stop offset="0" style="stop-color:rgb(15,94,242);stop-opacity:1"/><stop offset="0.52" style="stop-color:rgb(14,140,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(5,30,238);stop-opacity:1"/></radialGradient>
+    </defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OVERVIEW ============ -->
+  <section>
+    <div class="section-inner">
+      <div class="eyebrow reveal">Overview</div>
+      <div class="brief">
+        <p class="reveal rt">Detailers Movement is a marketing agency and community platform built for the auto detailing, PPF, and window-tint industry — helping shop owners grow through branded content, social campaigns, and performance-driven video. I edited a series of brand and social-first videos that carry the agency's bold, geometric identity across every frame, engineered for scroll and built for retention.</p>
+        <div class="spec-list reveal">
+          <div class="spec-row"><span class="k">Role</span><span class="v">Video Editor</span></div>
+          <div class="spec-row"><span class="k">Client</span><span class="v">Detailers Movement</span></div>
+          <div class="spec-row"><span class="k">Deliverables</span><span class="v">Brand films + social-first cuts</span></div>
+          <div class="spec-row"><span class="k">Tools</span><span class="v">Premiere · After Effects · CapCut</span></div>
+          <div class="spec-row"><span class="k">Format</span><span class="v">16:9 · 9:16 · 1080p</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOGO & USAGE ============ -->
+  <section style="padding-top:0;">
+    <div class="section-inner">
+      <div class="eyebrow reveal">Logo & Usage</div>
+      <div class="logo-grid reveal">
+        <div class="logo-slot">
+          <svg class="soft-fade ngang-fade" viewBox="0 0 1766 543" xmlns="http://www.w3.org/2000/svg">
+            <g transform="matrix(1,0,0,1,-2333.895833,-745.545833)">
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,701.8614,197.7109)">
+                <path d="M0,18.648C2.895,18.648 5.195,17.821 6.977,16.167C8.758,14.512 9.575,12.257 9.575,9.324C9.575,6.391 8.684,4.136 6.977,2.481C5.27,0.827 2.895,-0 0,-0L-6.012,-0L-6.012,18.723L0,18.723L0,18.648ZM-15.513,-7.745L0.371,-7.745C4.082,-7.745 7.349,-7.068 10.169,-5.64C12.99,-4.211 15.216,-2.256 16.775,0.301C18.334,2.857 19.15,5.865 19.15,9.324C19.15,12.783 18.334,15.791 16.775,18.347C15.216,20.904 12.99,22.859 10.169,24.287C7.349,25.716 4.082,26.393 0.371,26.393L-15.513,26.393L-15.513,-7.745Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,753.0776,197.4105)">
+                <path d="M0,19.174L0,26.618L-27.018,26.618L-27.018,-7.444L-0.668,-7.444L-0.668,0L-17.591,0L-17.591,5.714L-2.672,5.714L-2.672,12.933L-17.591,12.933L-17.591,19.174L0,19.174Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,765.4717,216.2833)">
+                <path d="M0,-18.723L-10.318,-18.723L-10.318,-26.393L19.818,-26.393L19.818,-18.723L9.501,-18.723L9.501,7.67L0,7.67L0,-18.723Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,806.8907,203.7262)">
+                <path d="M0,6.542L-4.305,-4.361L-8.61,6.542L0.074,6.542L0,6.542ZM2.821,13.685L-11.431,13.685L-14.103,20.302L-23.827,20.302L-8.982,-13.76L0.371,-13.76L15.291,20.302L5.419,20.302L2.746,13.685L2.821,13.685Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,0,-183.697)">
+                <rect x="824.928" y="373.663" width="9.501" height="34.063" style="fill:white;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,841.2576,224.029)">
+                <path d="M0,-34.063L9.501,-34.063L9.501,-7.67L25.534,-7.67L25.534,0L0,0L0,-34.063Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,897.5212,197.4105)">
+                <path d="M0,19.174L0,26.618L-27.018,26.618L-27.018,-7.444L-0.668,-7.444L-0.668,0L-17.591,0L-17.591,5.714L-2.672,5.714L-2.672,12.933L-17.591,12.933L-17.591,19.174L0,19.174Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,922.0153,215.0808)">
+                <path d="M0,-16.242C-0.965,-17.144 -2.45,-17.52 -4.454,-17.52L-9.724,-17.52L-9.724,-7.52L-4.454,-7.52C-2.524,-7.52 -1.039,-7.971 0,-8.798C0.965,-9.625 1.484,-10.903 1.484,-12.482C1.484,-14.061 0.965,-15.34 0,-16.167L0,-16.242ZM-4.454,-0.151L-9.724,-0.151L-9.724,8.873L-19.225,8.873L-19.225,-25.115L-3.86,-25.115C-0.817,-25.115 1.856,-24.588 4.082,-23.611C6.309,-22.558 8.09,-21.13 9.278,-19.25C10.466,-17.37 11.134,-15.114 11.134,-12.557C11.134,-10.001 10.54,-7.971 9.427,-6.091C8.313,-4.286 6.68,-2.858 4.527,-1.805L11.801,8.873L1.632,8.873L-4.454,-0.151Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,942.2812,190.0409)">
+                <path d="M0,33.612C-2.598,32.935 -4.676,32.033 -6.235,30.905L-3.117,23.762C-1.633,24.739 0.149,25.566 2.152,26.168C4.157,26.769 6.087,27.07 8.017,27.07C11.653,27.07 13.509,26.168 13.509,24.288C13.509,23.31 12.99,22.559 11.95,22.107C10.911,21.656 9.204,21.13 6.903,20.603C4.379,20.077 2.227,19.476 0.594,18.799C-1.113,18.197 -2.598,17.145 -3.785,15.791C-4.973,14.362 -5.641,12.483 -5.641,10.152C-5.641,8.046 -5.047,6.166 -3.934,4.512C-2.82,2.858 -1.113,1.504 1.114,0.527C3.34,-0.451 6.087,-0.902 9.278,-0.902C11.505,-0.902 13.658,-0.676 15.81,-0.15C17.963,0.376 19.819,1.053 21.451,2.031L18.556,9.174C15.365,7.445 12.247,6.542 9.204,6.542C7.349,6.542 5.938,6.843 5.047,7.369C4.157,7.971 3.786,8.648 3.786,9.55C3.786,10.452 4.305,11.129 5.344,11.58C6.383,12.031 8.017,12.483 10.317,13.009C12.915,13.535 14.994,14.137 16.701,14.814C18.408,15.415 19.818,16.468 21.081,17.821C22.342,19.175 22.936,21.055 22.936,23.461C22.936,25.491 22.342,27.371 21.229,29.025C20.115,30.679 18.408,32.033 16.181,33.01C13.955,33.988 11.208,34.514 8.017,34.514C5.27,34.514 2.672,34.138 0.074,33.462L0,33.612Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,716.7065,236.8402)">
+                <path d="M0,34.063L0,16.017L-8.758,30.679L-12.99,30.679L-21.6,16.468L-21.6,34.063L-30.358,34.063L-30.358,0L-22.49,0L-10.688,19.701L0.816,0L8.685,0L8.685,34.063L0,34.063Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,753.7457,245.2634)">
+                <path d="M0,17.143C1.411,16.316 2.45,15.188 3.266,13.684C4.083,12.18 4.454,10.526 4.454,8.571C4.454,6.616 4.083,4.962 3.266,3.458C2.45,1.954 1.411,0.826 0,-0.001C-1.41,-0.828 -2.894,-1.204 -4.602,-1.204C-6.309,-1.204 -7.868,-0.828 -9.204,-0.001C-10.614,0.826 -11.653,1.954 -12.47,3.458C-13.286,4.962 -13.658,6.616 -13.658,8.571C-13.658,10.526 -13.286,12.18 -12.47,13.684C-11.653,15.188 -10.614,16.316 -9.204,17.143C-7.793,17.97 -6.309,18.346 -4.602,18.346C-2.894,18.346 -1.336,17.97 0,17.143M-14.251,23.986C-17.072,22.482 -19.299,20.376 -20.932,17.669C-22.564,14.962 -23.381,11.955 -23.381,8.571C-23.381,5.188 -22.564,2.18 -20.932,-0.527C-19.299,-3.234 -17.072,-5.34 -14.251,-6.844C-11.431,-8.347 -8.239,-9.099 -4.676,-9.099C-1.113,-9.099 2.079,-8.347 4.899,-6.844C7.72,-5.34 9.947,-3.234 11.58,-0.527C13.213,2.18 14.029,5.188 14.029,8.571C14.029,11.955 13.213,14.962 11.58,17.669C9.947,20.376 7.72,22.482 4.899,23.986C2.079,25.49 -1.113,26.242 -4.676,26.242C-8.239,26.242 -11.431,25.49 -14.251,23.986" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,805.7782,270.9037)">
+                <path d="M0,-34.063L-14.399,0L-23.752,0L-38.152,-34.063L-27.835,-34.063L-18.705,-11.881L-9.352,-34.063L0.074,-34.063L0,-34.063Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,834.7254,244.285)">
+                <path d="M0,19.174L0,26.618L-27.018,26.618L-27.018,-7.444L-0.668,-7.444L-0.668,0L-17.592,0L-17.592,5.715L-2.672,5.715L-2.672,12.933L-17.592,12.933L-17.592,19.174L0,19.174Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,870.3529,236.8402)">
+                <path d="M0,34.063L0,16.017L-8.758,30.679L-12.99,30.679L-21.6,16.468L-21.6,34.063L-30.358,34.063L-30.358,0L-22.49,0L-10.688,19.701L0.816,0L8.685,0L8.685,34.063L0,34.063Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,912.8107,244.285)">
+                <path d="M0,19.174L0,26.618L-27.018,26.618L-27.018,-7.444L-0.668,-7.444L-0.668,0L-17.592,0L-17.592,5.715L-2.672,5.715L-2.672,12.933L-17.592,12.933L-17.592,19.174L0,19.174Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,950.1474,270.9037)">
+                <path d="M0,-34.063L0,0L-7.868,0L-22.713,-18.122L-22.713,0L-32.065,0L-32.065,-34.063L-24.197,-34.063L-9.352,-15.941L-9.352,-34.063L0,-34.063Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,964.0264,263.1577)">
+                <path d="M0,-18.723L-10.318,-18.723L-10.318,-26.393L19.818,-26.393L19.818,-18.723L9.501,-18.723L9.501,7.67L0,7.67L0,-18.723Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,690.1868,295.2045)">
+                <path d="M0,-10.446C-0.937,-9.903 -1.652,-9.18 -2.232,-8.275C-2.768,-7.371 -3.035,-6.331 -3.035,-5.246C-3.035,-4.16 -2.768,-3.166 -2.232,-2.216C-1.696,-1.312 -0.937,-0.543 0,0C0.937,0.542 1.964,0.814 3.036,0.814C4.107,0.814 5.133,0.542 6.07,0C7.008,-0.543 7.722,-1.267 8.302,-2.216C8.838,-3.121 9.105,-4.16 9.105,-5.246C9.105,-6.331 8.838,-7.326 8.302,-8.275C7.766,-9.18 7.008,-9.903 6.07,-10.446C5.133,-10.988 4.107,-11.26 3.036,-11.26C1.964,-11.26 0.937,-10.988 0,-10.446M6.472,-11.124C7.543,-10.491 8.347,-9.677 8.972,-8.637C9.597,-7.597 9.909,-6.467 9.909,-5.246C9.909,-4.025 9.597,-2.895 8.972,-1.809C8.347,-0.769 7.499,0.09 6.472,0.678C5.446,1.266 4.285,1.582 3.036,1.582C1.785,1.582 0.625,1.266 -0.402,0.678C-1.428,0.09 -2.276,-0.769 -2.901,-1.809C-3.526,-2.849 -3.839,-3.979 -3.839,-5.246C-3.839,-6.512 -3.526,-7.597 -2.901,-8.637C-2.276,-9.677 -1.428,-10.491 -0.402,-11.124C0.67,-11.712 1.785,-12.028 3.036,-12.028C4.285,-12.028 5.446,-11.712 6.472,-11.124" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,718.8878,296.7417)">
+                <path d="M0,-13.475L0.848,-13.475L-3.66,0L-4.463,0L-8.526,-12.39L-12.587,0L-13.391,0L-17.899,-13.475L-17.006,-13.475L-12.945,-0.95L-8.882,-13.475L-8.079,-13.475L-4.017,-0.95L0,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,732.011,296.7417)">
+                <path d="M0,-13.475L0.759,-13.475L0.759,0L-0.179,0L-9.017,-12.254L-9.017,0L-9.82,0L-9.82,-13.475L-8.882,-13.475L0,-1.221L0,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,737.3224,296.6517)">
+                <path d="M0,-13.385L8.57,-13.385L8.57,-12.616L0.804,-12.616L0.804,-7.235L7.722,-7.235L7.722,-6.421L0.804,-6.421L0.804,-0.724L8.838,-0.724L8.838,0.045L0,0.045L0,-13.43L0,-13.385Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,757.944,284.8497)">
+                <path d="M0,10.309C0.937,9.767 1.651,9.043 2.187,8.139C2.723,7.234 2.991,6.24 2.991,5.154C2.991,4.069 2.723,3.075 2.187,2.17C1.651,1.266 0.937,0.542 0,0C-0.937,-0.543 -1.919,-0.814 -3.035,-0.814L-7.499,-0.814L-7.499,11.078L-2.991,11.078C-1.919,11.078 -0.892,10.806 0.045,10.264L0,10.309ZM0.402,-0.679C1.428,-0.091 2.276,0.723 2.901,1.763C3.526,2.803 3.794,3.934 3.794,5.154C3.794,6.375 3.482,7.506 2.901,8.546C2.321,9.586 1.473,10.4 0.402,10.987C-0.669,11.575 -1.785,11.892 -3.035,11.892L-8.302,11.892L-8.302,-1.583L-3.035,-1.583C-1.785,-1.583 -0.669,-1.267 0.402,-0.679" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,778.7449,284.8032)">
+                <path d="M0,10.401C0.714,9.904 1.071,9.18 1.071,8.231C1.071,7.281 0.714,6.603 0,6.105C-0.714,5.608 -1.696,5.382 -2.991,5.382L-7.588,5.382L-7.588,11.124L-2.991,11.124C-1.696,11.124 -0.714,10.898 0,10.401M-0.491,3.89C0.089,3.438 0.402,2.759 0.402,1.9C0.402,1.041 0.089,0.408 -0.491,-0.044C-1.072,-0.497 -1.92,-0.723 -2.991,-0.723L-7.588,-0.723L-7.588,4.613L-2.991,4.613C-1.92,4.613 -1.116,4.387 -0.491,3.935L-0.491,3.89ZM0.089,-0.632C0.804,-0.044 1.205,0.77 1.205,1.81C1.205,2.624 0.982,3.347 0.536,3.89C0.089,4.432 -0.536,4.794 -1.339,4.929C-0.312,5.065 0.491,5.427 1.027,6.015C1.607,6.603 1.875,7.371 1.875,8.321C1.875,9.452 1.473,10.355 0.625,10.989C-0.223,11.622 -1.384,11.938 -2.901,11.938L-8.392,11.938L-8.392,-1.537L-2.946,-1.537C-1.652,-1.537 -0.625,-1.265 0.089,-0.678L0.089,-0.632Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,793.3859,296.7417)">
+                <path d="M0,-13.475L-5.267,-4.929L-5.267,0L-6.026,0L-6.026,-4.884L-11.337,-13.475L-10.489,-13.475L-5.624,-5.924L-0.848,-13.475L0,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,810.4814,296.7417)">
+                <path d="M0,-13.475L-5.268,-4.929L-5.268,0L-6.026,0L-6.026,-4.884L-11.337,-13.475L-10.49,-13.475L-5.624,-5.924L-0.849,-13.475L0,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,814.4081,295.2045)">
+                <path d="M0,-10.446C-0.937,-9.903 -1.651,-9.18 -2.232,-8.275C-2.768,-7.371 -3.036,-6.331 -3.036,-5.246C-3.036,-4.16 -2.768,-3.166 -2.232,-2.216C-1.696,-1.312 -0.937,-0.543 0,0C0.937,0.542 1.964,0.814 3.035,0.814C4.107,0.814 5.133,0.542 6.07,0C7.008,-0.543 7.722,-1.267 8.302,-2.216C8.838,-3.121 9.105,-4.16 9.105,-5.246C9.105,-6.331 8.838,-7.326 8.302,-8.275C7.766,-9.18 7.008,-9.903 6.07,-10.446C5.133,-10.988 4.107,-11.26 3.035,-11.26C1.964,-11.26 0.937,-10.988 0,-10.446M6.517,-11.124C7.588,-10.491 8.391,-9.677 9.016,-8.637C9.641,-7.597 9.953,-6.467 9.953,-5.246C9.953,-4.025 9.641,-2.895 9.016,-1.809C8.391,-0.769 7.543,0.09 6.517,0.678C5.49,1.266 4.33,1.582 3.08,1.582C1.83,1.582 0.669,1.266 -0.357,0.678C-1.384,0.09 -2.232,-0.769 -2.857,-1.809C-3.482,-2.849 -3.794,-3.979 -3.794,-5.246C-3.794,-6.512 -3.482,-7.597 -2.857,-8.637C-2.232,-9.677 -1.384,-10.491 -0.357,-11.124C0.714,-11.712 1.83,-12.028 3.08,-12.028C4.33,-12.028 5.49,-11.712 6.517,-11.124" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,829.1835,285.3463)">
+                <path d="M0,9.451C0.804,10.265 1.92,10.672 3.392,10.672C4.866,10.672 5.937,10.265 6.74,9.451C7.544,8.637 7.945,7.461 7.945,5.969L7.945,-2.035L8.749,-2.035L8.749,5.969C8.749,7.733 8.302,9.089 7.32,10.038C6.383,10.988 5.044,11.486 3.348,11.486C1.651,11.486 0.312,10.988 -0.625,10.038C-1.562,9.089 -2.053,7.733 -2.053,5.969L-2.053,-2.035L-1.25,-2.035L-1.25,5.969C-1.25,7.461 -0.848,8.637 -0.044,9.451L0,9.451Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,842.0825,298.7767)">
+                <path d="M0,-3.075C0,-3.075 0.179,-2.759 0.179,-2.578C0.179,-2.442 0.179,-2.352 0.089,-2.216C0.045,-2.08 0,-1.99 0,-1.945L-0.893,0.226L-1.428,0.226L-0.714,-1.945C-0.714,-1.945 -0.937,-2.08 -1.027,-2.216C-1.116,-2.352 -1.16,-2.442 -1.16,-2.623C-1.16,-2.804 -1.116,-2.985 -0.982,-3.121C-0.848,-3.256 -0.714,-3.301 -0.536,-3.301C-0.357,-3.301 -0.223,-3.256 -0.089,-3.121L0,-3.075Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,859.3573,284.8497)">
+                <path d="M0,10.309C0.937,9.767 1.651,9.043 2.187,8.139C2.723,7.234 2.991,6.24 2.991,5.154C2.991,4.069 2.723,3.075 2.187,2.17C1.651,1.266 0.937,0.542 0,0C-0.937,-0.543 -1.92,-0.814 -3.036,-0.814L-7.499,-0.814L-7.499,11.078L-2.991,11.078C-1.92,11.078 -0.893,10.806 0.044,10.264L0,10.309ZM0.402,-0.679C1.428,-0.091 2.276,0.723 2.901,1.763C3.526,2.803 3.794,3.934 3.794,5.154C3.794,6.375 3.482,7.506 2.901,8.546C2.321,9.586 1.473,10.4 0.402,10.987C-0.67,11.575 -1.785,11.892 -3.036,11.892L-8.302,11.892L-8.302,-1.583L-3.036,-1.583C-1.785,-1.583 -0.67,-1.267 0.402,-0.679" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,871.006,288.558)">
+                <path d="M0,2.893C1.384,2.893 2.455,2.577 3.214,1.944C3.973,1.311 4.33,0.361 4.33,-0.815C4.33,-1.991 3.973,-2.895 3.214,-3.528C2.455,-4.161 1.384,-4.477 0,-4.477L-3.928,-4.477L-3.928,2.939L0,2.939L0,2.893ZM4.24,8.184L1.116,3.616C0.804,3.662 0.447,3.707 0,3.707L-3.883,3.707L-3.883,8.184L-4.686,8.184L-4.686,-5.291L0,-5.291C1.651,-5.291 2.901,-4.884 3.794,-4.115C4.687,-3.347 5.133,-2.262 5.133,-0.86C5.133,0.27 4.865,1.22 4.285,1.944C3.75,2.667 2.901,3.165 1.83,3.435L5.178,8.139L4.24,8.139L4.24,8.184Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,0,-17.683)">
+                <rect x="880.023" y="300.95" width="0.804" height="13.475" style="fill:white;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,883.2814,296.7417)">
+                <path d="M-0.045,-13.475L0.892,-13.475L5.936,-0.995L10.98,-13.475L11.873,-13.475L6.338,0L5.49,0L-0.045,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,897.5644,296.6517)">
+                <path d="M0,-13.385L8.57,-13.385L8.57,-12.616L0.804,-12.616L0.804,-7.235L7.722,-7.235L7.722,-6.421L0.804,-6.421L0.804,-0.724L8.838,-0.724L8.838,0.045L0,0.045L0,-13.43L0,-13.385Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,919.6605,296.7417)">
+                <path d="M0,-13.475L0.759,-13.475L0.759,0L-0.179,0L-9.016,-12.254L-9.016,0L-9.82,0L-9.82,-13.475L-8.882,-13.475L0,-1.221L0,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,938.8538,284.8032)">
+                <path d="M0,10.401C0.714,9.904 1.072,9.18 1.072,8.231C1.072,7.281 0.714,6.603 0,6.105C-0.714,5.608 -1.696,5.382 -2.991,5.382L-7.588,5.382L-7.588,11.124L-2.991,11.124C-1.696,11.124 -0.714,10.898 0,10.401M-0.491,3.89C0.089,3.438 0.402,2.759 0.402,1.9C0.402,1.041 0.089,0.408 -0.491,-0.044C-1.071,-0.497 -1.919,-0.723 -2.991,-0.723L-7.588,-0.723L-7.588,4.613L-2.991,4.613C-1.919,4.613 -1.116,4.387 -0.491,3.935L-0.491,3.89ZM0.134,-0.632C0.849,-0.044 1.25,0.77 1.25,1.81C1.25,2.624 1.027,3.347 0.58,3.89C0.134,4.432 -0.491,4.794 -1.294,4.929C-0.267,5.065 0.536,5.427 1.072,6.015C1.651,6.603 1.919,7.371 1.919,8.321C1.919,9.452 1.518,10.355 0.67,10.989C-0.178,11.622 -1.339,11.938 -2.856,11.938L-8.347,11.938L-8.347,-1.537L-2.901,-1.537C-1.607,-1.537 -0.58,-1.265 0.134,-0.678L0.134,-0.632Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,953.4948,296.7417)">
+                <path d="M0,-13.475L-5.267,-4.929L-5.267,0L-6.026,0L-6.026,-4.884L-11.337,-13.475L-10.49,-13.475L-5.624,-5.924L-0.848,-13.475L0,-13.475Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,963.0464,285.3463)">
+                <path d="M0,9.451C0.804,10.265 1.92,10.672 3.392,10.672C4.865,10.672 5.937,10.265 6.74,9.451C7.543,8.637 7.945,7.461 7.945,5.969L7.945,-2.035L8.749,-2.035L8.749,5.969C8.749,7.733 8.303,9.089 7.32,10.038C6.383,10.988 5.044,11.486 3.347,11.486C1.652,11.486 0.312,10.988 -0.625,10.038C-1.562,9.089 -2.053,7.733 -2.053,5.969L-2.053,-2.035L-1.25,-2.035L-1.25,5.969C-1.25,7.461 -0.848,8.637 -0.045,9.451L0,9.451Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,981.3461,295.6566)">
+                <path d="M0,-11.395C-0.625,-11.576 -1.25,-11.667 -1.83,-11.667C-2.901,-11.667 -3.705,-11.441 -4.374,-11.034C-5.044,-10.627 -5.311,-10.039 -5.311,-9.36C-5.311,-8.727 -5.133,-8.23 -4.821,-7.868C-4.508,-7.461 -4.107,-7.19 -3.615,-6.964C-3.124,-6.738 -2.499,-6.511 -1.696,-6.24C-0.804,-5.969 -0.089,-5.697 0.491,-5.472C1.027,-5.201 1.518,-4.839 1.92,-4.341C2.321,-3.844 2.5,-3.211 2.5,-2.397C2.5,-1.718 2.321,-1.085 1.92,-0.543C1.518,0 0.982,0.406 0.312,0.678C-0.402,0.949 -1.205,1.13 -2.098,1.13C-2.991,1.13 -3.839,0.949 -4.687,0.587C-5.535,0.226 -6.249,-0.226 -6.829,-0.859L-6.427,-1.583C-5.892,-0.995 -5.222,-0.543 -4.463,-0.226C-3.66,0.09 -2.901,0.271 -2.098,0.271C-0.937,0.271 -0.044,0.045 0.625,-0.452C1.295,-0.95 1.651,-1.583 1.651,-2.397C1.651,-3.03 1.473,-3.527 1.161,-3.934C0.849,-4.341 0.402,-4.613 -0.044,-4.839C-0.536,-5.065 -1.205,-5.291 -2.008,-5.517C-2.901,-5.788 -3.66,-6.059 -4.196,-6.331C-4.731,-6.602 -5.178,-6.964 -5.579,-7.416C-5.936,-7.913 -6.16,-8.546 -6.16,-9.315C-6.16,-9.948 -5.981,-10.536 -5.624,-10.988C-5.267,-11.486 -4.731,-11.848 -4.107,-12.118C-3.482,-12.39 -2.678,-12.525 -1.83,-12.525C-1.16,-12.525 -0.491,-12.435 0.179,-12.209C0.848,-11.983 1.428,-11.757 1.964,-11.395L1.607,-10.672C1.116,-10.988 0.58,-11.214 -0.044,-11.395L0,-11.395Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(32.006542,-58.642864,-58.642864,-32.006542,576.343676,265.19488)">
+                <path d="M1.064,-0.045C1.049,-0.018 1.033,0.008 1.016,0.032C0.987,0.074 0.954,0.113 0.918,0.148C0.777,0.284 0.592,0.361 0.401,0.369C0.264,0.375 0.125,0.345 -0.003,0.275C-0.03,0.26 -0.057,0.243 -0.081,0.226C-0.083,0.225 -0.082,0.222 -0.08,0.222C0.02,0.213 0.117,0.183 0.205,0.134C0.306,0.079 0.395,-0 0.462,-0.101C0.471,-0.115 0.481,-0.13 0.489,-0.145C0.492,-0.149 0.494,-0.153 0.496,-0.158C0.509,-0.182 0.521,-0.207 0.531,-0.232C0.534,-0.239 0.537,-0.245 0.539,-0.252C0.549,-0.277 0.557,-0.302 0.563,-0.327C0.571,-0.357 0.604,-0.371 0.631,-0.356L1.051,-0.127C1.076,-0.114 1.085,-0.083 1.072,-0.058L1.064,-0.045Z" style="fill:url(#ngang__Linear1);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(-57.053318,40.663311,40.663311,57.053318,666.770577,257.609157)">
+                <path d="M-0.043,-0.082C0.077,-0.04 0.208,-0.03 0.336,-0.052C0.404,-0.063 0.471,-0.084 0.535,-0.113C0.55,-0.12 0.565,-0.128 0.579,-0.136C0.6,-0.147 0.62,-0.159 0.639,-0.171C0.647,-0.177 0.655,-0.182 0.663,-0.188C0.677,-0.198 0.691,-0.208 0.704,-0.219C0.714,-0.227 0.725,-0.236 0.735,-0.245C0.741,-0.251 0.748,-0.257 0.754,-0.264C0.762,-0.271 0.77,-0.279 0.777,-0.287L0.777,-0.287L0.795,-0.306C0.803,-0.315 0.819,-0.315 0.827,-0.304L1.105,0.087C1.113,0.098 1.111,0.113 1.1,0.121L1.027,0.173C0.999,0.193 0.969,0.21 0.938,0.224C0.912,0.236 0.885,0.246 0.858,0.256C0.739,0.298 0.612,0.308 0.491,0.289C0.3,0.259 0.121,0.156 0,-0.013L-0.051,-0.084C-0.048,-0.083 -0.046,-0.083 -0.043,-0.082Z" style="fill:url(#ngang__Linear2);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(66.155853,-33.683395,-33.683395,-66.155853,641.275011,238.044081)">
+                <path d="M0.606,0.585C0.578,0.599 0.548,0.611 0.518,0.619C0.348,0.665 0.166,0.61 0.052,0.478C0.041,0.465 0.032,0.451 0.024,0.436L-0.281,-0.164C-0.308,-0.216 -0.357,-0.254 -0.415,-0.264C-0.44,-0.268 -0.465,-0.268 -0.49,-0.264C-0.515,-0.26 -0.539,-0.253 -0.562,-0.241C-0.569,-0.237 -0.573,-0.235 -0.579,-0.232C-0.571,-0.238 -0.563,-0.244 -0.554,-0.25C-0.548,-0.255 -0.541,-0.259 -0.533,-0.264C-0.523,-0.271 -0.512,-0.278 -0.501,-0.285C-0.487,-0.293 -0.473,-0.3 -0.459,-0.308C-0.45,-0.312 -0.442,-0.316 -0.434,-0.32C-0.414,-0.329 -0.394,-0.337 -0.373,-0.345C-0.359,-0.35 -0.344,-0.355 -0.329,-0.359C-0.265,-0.378 -0.199,-0.388 -0.134,-0.389C-0.012,-0.392 0.109,-0.364 0.215,-0.308C0.218,-0.307 0.22,-0.306 0.222,-0.305L0.642,0.521C0.653,0.541 0.645,0.565 0.625,0.576L0.606,0.585Z" style="fill:url(#ngang__Radial3);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(13.13684,59.270142,59.270142,-13.13684,580.866541,244.198203)">
+                <path d="M0.021,0.327C0.017,0.308 0.014,0.289 0.012,0.271C-0.005,0.138 0.011,0.008 0.054,-0.11C0.093,-0.216 0.154,-0.313 0.232,-0.394C0.561,-0.425 0.874,-0.262 1.044,0.013C1.052,0.025 1.045,0.042 1.031,0.045L0.286,0.21C0.171,0.235 0.086,0.323 0.062,0.427C0.06,0.435 0.058,0.443 0.057,0.452C0.054,0.444 0.051,0.437 0.049,0.43C0.039,0.401 0.031,0.372 0.024,0.342C0.023,0.337 0.022,0.332 0.021,0.327Z" style="fill:url(#ngang__Linear4);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="ngang__Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,0.003757)"><stop offset="0" style="stop-color:rgb(41,168,246);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(54,112,247);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(68,53,249);stop-opacity:1"/></linearGradient>
+        <linearGradient id="ngang__Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,-0,-0,-1,0,-0.007014)"><stop offset="0" style="stop-color:rgb(17,143,244);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(21,182,244);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(25,226,245);stop-opacity:1"/></linearGradient>
+        <radialGradient id="ngang__Radial3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.469186,-0.172814,-0.147565,-1.254533,-0.469186,0.446255)"><stop offset="0" style="stop-color:rgb(15,94,242);stop-opacity:1"/><stop offset="0.52" style="stop-color:rgb(14,140,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(5,30,238);stop-opacity:1"/></radialGradient>
+        <linearGradient id="ngang__Linear4" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,-0,-0,-1,0,0.026892)"><stop offset="0" style="stop-color:rgb(25,52,242);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(31,150,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(33,217,246);stop-opacity:1"/></linearGradient>
+    </defs>
+          </svg>
+          <span class="slot-label">Logo — Ngang</span>
+        </div>
+        <div class="logo-slot">
+          <svg class="soft-fade giua-fade" viewBox="0 0 1537 857" xmlns="http://www.w3.org/2000/svg">
+              <g transform="matrix(1,0,0,1,-400.64125,-569.675)">
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,96.1539,315.8949)">
+                <path d="M0,-21.467L9.989,-21.467C12.322,-21.467 14.376,-21.041 16.15,-20.143C17.923,-19.245 19.324,-18.015 20.304,-16.408C21.284,-14.8 21.798,-12.909 21.798,-10.733C21.798,-8.558 21.284,-6.667 20.304,-5.059C19.324,-3.452 17.923,-2.222 16.15,-1.324C14.376,-0.426 12.322,0 9.989,0L0,0L0,-21.467ZM9.755,-4.87C11.576,-4.87 13.023,-5.39 14.143,-6.431C15.263,-7.471 15.776,-8.889 15.776,-10.733C15.776,-12.578 15.216,-13.996 14.143,-15.036C13.069,-16.077 11.576,-16.597 9.755,-16.597L5.974,-16.597L5.974,-4.823L9.755,-4.823L9.755,-4.87Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,138.1157,299.1085)">
+                <path d="M0,12.058L0,16.739L-16.99,16.739L-16.99,-4.681L-0.42,-4.681L-0.42,0.001L-11.062,0.001L-11.062,3.594L-1.68,3.594L-1.68,8.133L-11.062,8.133L-11.062,12.058L0,12.058Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,145.9103,310.9769)">
+                <path d="M0,-11.774L-6.488,-11.774L-6.488,-16.597L12.462,-16.597L12.462,-11.774L5.974,-11.774L5.974,4.823L0,4.823L0,-11.774Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,173.729,298.5887)">
+                <path d="M0,13.098L-8.962,13.098L-10.642,17.259L-16.757,17.259L-7.421,-4.161L-1.54,-4.161L7.842,17.259L1.634,17.259L-0.047,13.098L0,13.098ZM-1.774,8.606L-4.481,1.75L-7.188,8.606L-1.727,8.606L-1.774,8.606Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,0,12.584)">
+                <rect x="183.296" y="281.844" width="5.974" height="21.42" style="fill:white;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,193.5656,315.8479)">
+                <path d="M0,-21.42L5.974,-21.42L5.974,-4.823L16.056,-4.823L16.056,0L0,0L0,-21.42Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,228.9451,299.1085)">
+                <path d="M0,12.058L0,16.739L-16.99,16.739L-16.99,-4.681L-0.42,-4.681L-0.42,0.001L-11.062,0.001L-11.062,3.594L-1.68,3.594L-1.68,8.133L-11.062,8.133L-11.062,12.058L0,12.058Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,241.5022,300.1023)">
+                <path d="M0.047,10.024L-3.267,10.024L-3.267,15.698L-9.242,15.698L-9.242,-5.674L0.42,-5.674C2.334,-5.674 4.014,-5.343 5.414,-4.729C6.815,-4.067 7.935,-3.168 8.682,-1.986C9.428,-0.804 9.849,0.614 9.849,2.222C9.849,3.83 9.475,5.106 8.775,6.289C8.075,7.423 7.048,8.322 5.694,8.984L10.269,15.698L3.874,15.698L0.047,10.024ZM2.847,-0.095C2.24,-0.662 1.307,-0.899 0.047,-0.899L-3.267,-0.899L-3.267,5.39L0.047,5.39C1.26,5.39 2.194,5.106 2.847,4.586C3.454,4.066 3.781,3.262 3.781,2.269C3.781,1.276 3.454,0.473 2.847,-0.048L2.847,-0.095Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,257.0912,294.475)">
+                <path d="M0,21.136C-1.634,20.71 -2.941,20.143 -3.921,19.434L-1.96,14.942C-1.027,15.556 0.093,16.077 1.354,16.455C2.614,16.833 3.827,17.022 5.041,17.022C7.328,17.022 8.495,16.455 8.495,15.273C8.495,14.658 8.168,14.185 7.515,13.902C6.861,13.618 5.788,13.287 4.341,12.956C2.754,12.625 1.4,12.247 0.373,11.821C-0.7,11.443 -1.634,10.781 -2.38,9.93C-3.127,9.031 -3.547,7.849 -3.547,6.383C-3.547,5.059 -3.174,3.877 -2.474,2.837C-1.774,1.797 -0.7,0.946 0.7,0.331C2.1,-0.284 3.827,-0.567 5.835,-0.567C7.235,-0.567 8.588,-0.426 9.942,-0.095C11.296,0.236 12.462,0.662 13.489,1.277L11.669,5.769C9.662,4.681 7.702,4.114 5.788,4.114C4.621,4.114 3.734,4.303 3.174,4.634C2.614,5.012 2.38,5.438 2.38,6.005C2.38,6.572 2.707,6.998 3.361,7.282C4.014,7.565 5.041,7.849 6.488,8.18C8.122,8.511 9.429,8.889 10.502,9.315C11.576,9.693 12.462,10.355 13.256,11.206C14.049,12.057 14.423,13.24 14.423,14.753C14.423,16.029 14.049,17.211 13.349,18.252C12.649,19.292 11.576,20.143 10.175,20.758C8.775,21.372 7.048,21.703 5.041,21.703C3.314,21.703 1.68,21.467 0.047,21.041L0,21.136Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,296.8747,294.3331)">
+                <path d="M0,21.42L0,10.072L-5.508,19.292L-8.168,19.292L-13.583,10.356L-13.583,21.42L-19.09,21.42L-19.09,0L-14.143,0L-6.721,12.389L0.513,0L5.461,0L5.461,21.42L0,21.42Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,311.2039,295.3266)">
+                <path d="M0,19.386C-1.774,18.44 -3.174,17.116 -4.201,15.414C-5.228,13.712 -5.741,11.821 -5.741,9.693C-5.741,7.565 -5.228,5.674 -4.201,3.971C-3.174,2.269 -1.774,0.945 0,-0.001C1.774,-0.946 3.781,-1.419 6.021,-1.419C8.262,-1.419 10.269,-0.946 12.042,-0.001C13.816,0.945 15.216,2.269 16.243,3.971C17.27,5.674 17.783,7.565 17.783,9.693C17.783,11.821 17.27,13.712 16.243,15.414C15.216,17.116 13.816,18.44 12.042,19.386C10.269,20.332 8.262,20.805 6.021,20.805C3.781,20.805 1.774,20.332 0,19.386M8.962,15.083C9.849,14.563 10.502,13.854 11.015,12.908C11.529,11.962 11.762,10.922 11.762,9.693C11.762,8.463 11.529,7.423 11.015,6.477C10.502,5.532 9.849,4.822 8.962,4.302C8.075,3.782 7.141,3.546 6.068,3.546C4.994,3.546 4.014,3.782 3.174,4.302C2.287,4.822 1.634,5.532 1.12,6.477C0.607,7.423 0.373,8.463 0.373,9.693C0.373,10.922 0.607,11.962 1.12,12.908C1.634,13.854 2.287,14.563 3.174,15.083C4.061,15.603 4.994,15.84 6.068,15.84C7.141,15.84 8.122,15.603 8.962,15.083" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,352.8847,315.7534)">
+                <path d="M0,-21.42L-9.055,0L-14.936,0L-23.991,-21.42L-17.503,-21.42L-11.762,-7.471L-5.881,-21.42L0.047,-21.42L0,-21.42Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,371.0899,299.014)">
+                <path d="M0,12.058L0,16.739L-16.99,16.739L-16.99,-4.681L-0.42,-4.681L-0.42,0.001L-11.062,0.001L-11.062,3.594L-1.68,3.594L-1.68,8.133L-11.062,8.133L-11.062,12.058L0,12.058Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,393.4935,294.3331)">
+                <path d="M0,21.42L0,10.072L-5.508,19.292L-8.168,19.292L-13.583,10.356L-13.583,21.42L-19.09,21.42L-19.09,0L-14.143,0L-6.721,12.389L0.513,0L5.461,0L5.461,21.42L0,21.42Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,420.1923,299.014)">
+                <path d="M0,12.058L0,16.739L-16.99,16.739L-16.99,-4.681L-0.42,-4.681L-0.42,0.001L-11.062,0.001L-11.062,3.594L-1.68,3.594L-1.68,8.133L-11.062,8.133L-11.062,12.058L0,12.058Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,443.6694,315.7534)">
+                <path d="M0,-21.42L0,0L-4.948,0L-14.283,-11.396L-14.283,0L-20.164,0L-20.164,-21.42L-15.216,-21.42L-5.881,-10.024L-5.881,-21.42L0,-21.42Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,452.3983,310.8828)">
+                <path d="M0,-11.774L-6.488,-11.774L-6.488,-16.597L12.462,-16.597L12.462,-11.774L5.974,-11.774L5.974,4.823L0,4.823L0,-11.774Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,152.7675,339.3107)">
+                <path d="M0,-10.89C0.988,-10.306 1.73,-9.555 2.306,-8.595C2.883,-7.636 3.171,-6.593 3.171,-5.466C3.171,-4.34 2.883,-3.296 2.306,-2.295C1.73,-1.336 0.947,-0.543 0,0C-0.947,0.542 -2.018,0.834 -3.171,0.834C-4.324,0.834 -5.395,0.542 -6.343,0C-7.29,-0.543 -8.072,-1.336 -8.649,-2.295C-9.226,-3.255 -9.514,-4.298 -9.514,-5.466C-9.514,-6.634 -9.226,-7.636 -8.649,-8.595C-8.072,-9.555 -7.29,-10.306 -6.343,-10.89C-5.354,-11.432 -4.324,-11.724 -3.171,-11.724C-2.018,-11.724 -0.947,-11.432 0,-10.89M-5.972,-10.264C-6.837,-9.763 -7.496,-9.096 -8.031,-8.261C-8.525,-7.427 -8.773,-6.467 -8.773,-5.466C-8.773,-4.465 -8.525,-3.547 -8.031,-2.671C-7.537,-1.836 -6.837,-1.127 -5.972,-0.626C-5.107,-0.126 -4.16,0.125 -3.171,0.125C-2.183,0.125 -1.236,-0.126 -0.371,-0.626C0.494,-1.127 1.153,-1.794 1.689,-2.671C2.183,-3.505 2.43,-4.465 2.43,-5.466C2.43,-6.467 2.183,-7.385 1.689,-8.261C1.194,-9.096 0.494,-9.763 -0.371,-10.264C-1.236,-10.765 -2.183,-11.015 -3.171,-11.015C-4.16,-11.015 -5.107,-10.765 -5.972,-10.264" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,173.2796,340.1027)">
+                <path d="M0,-12.433L0.783,-12.433L-3.377,0L-4.119,0L-7.866,-11.432L-11.614,0L-12.356,0L-16.515,-12.433L-15.692,-12.433L-11.944,-0.876L-8.196,-12.433L-7.455,-12.433L-3.707,-0.876L0,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,185.3858,340.1027)">
+                <path d="M0,-12.433L0.7,-12.433L0.7,0L-0.165,0L-8.32,-11.307L-8.32,0L-9.061,0L-9.061,-12.433L-8.196,-12.433L0,-1.126L0,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,190.2866,340.0195)">
+                <path d="M0,-12.35L7.908,-12.35L7.908,-11.641L0.741,-11.641L0.741,-6.676L7.125,-6.676L7.125,-5.925L0.741,-5.925L0.741,-0.668L8.155,-0.668L8.155,0.042L0,0.042L0,-12.392L0,-12.35Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,209.6861,339.2692)">
+                <path d="M0,-10.765C0.947,-10.223 1.73,-9.472 2.306,-8.512C2.883,-7.552 3.13,-6.509 3.13,-5.383C3.13,-4.256 2.842,-3.213 2.306,-2.254C1.771,-1.294 0.988,-0.543 0,-0.001C-0.988,0.542 -2.018,0.834 -3.171,0.834L-8.031,0.834L-8.031,-11.599L-3.171,-11.599C-2.018,-11.599 -0.988,-11.307 0,-10.765M-0.371,-0.626C0.494,-1.127 1.153,-1.795 1.647,-2.629C2.142,-3.464 2.389,-4.381 2.389,-5.383C2.389,-6.384 2.142,-7.302 1.647,-8.136C1.153,-8.971 0.494,-9.638 -0.371,-10.139C-1.236,-10.64 -2.142,-10.89 -3.171,-10.89L-7.29,-10.89L-7.29,0.083L-3.13,0.083C-2.142,0.083 -1.194,-0.167 -0.329,-0.668L-0.371,-0.626Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,228.5899,339.2692)">
+                <path d="M0,-10.765C0.659,-10.223 1.03,-9.472 1.03,-8.512C1.03,-7.761 0.824,-7.093 0.412,-6.593C0,-6.092 -0.577,-5.758 -1.318,-5.633C-0.371,-5.508 0.371,-5.174 0.865,-4.632C1.4,-4.089 1.647,-3.38 1.647,-2.504C1.647,-1.461 1.277,-0.626 0.494,-0.042C-0.288,0.542 -1.359,0.834 -2.759,0.834L-7.825,0.834L-7.825,-11.599L-2.801,-11.599C-1.606,-11.599 -0.659,-11.349 0,-10.807L0,-10.765ZM-0.535,-6.593C0,-7.01 0.288,-7.636 0.288,-8.429C0.288,-9.221 0,-9.805 -0.535,-10.223C-1.071,-10.64 -1.853,-10.848 -2.842,-10.848L-7.084,-10.848L-7.084,-5.925L-2.842,-5.925C-1.853,-5.925 -1.112,-6.134 -0.535,-6.551L-0.535,-6.593ZM-0.082,-0.585C0.577,-1.044 0.906,-1.711 0.906,-2.587C0.906,-3.464 0.577,-4.089 -0.082,-4.548C-0.741,-5.007 -1.647,-5.216 -2.842,-5.216L-7.084,-5.216L-7.084,0.083L-2.842,0.083C-1.647,0.083 -0.741,-0.126 -0.082,-0.585" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,242.0176,340.1027)">
+                <path d="M0,-12.433L-4.86,-4.547L-4.86,0L-5.56,0L-5.56,-4.506L-10.461,-12.433L-9.679,-12.433L-5.189,-5.465L-0.783,-12.433L0,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,257.7917,340.1027)">
+                <path d="M0,-12.433L-4.86,-4.547L-4.86,0L-5.56,0L-5.56,-4.506L-10.461,-12.433L-9.679,-12.433L-5.189,-5.465L-0.783,-12.433L0,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,267.4279,339.3107)">
+                <path d="M0,-10.89C0.988,-10.306 1.73,-9.555 2.306,-8.595C2.883,-7.636 3.171,-6.593 3.171,-5.466C3.171,-4.34 2.883,-3.296 2.306,-2.295C1.73,-1.336 0.947,-0.543 0,0C-0.947,0.542 -2.018,0.834 -3.171,0.834C-4.324,0.834 -5.395,0.542 -6.343,0C-7.29,-0.543 -8.072,-1.336 -8.649,-2.295C-9.226,-3.255 -9.514,-4.298 -9.514,-5.466C-9.514,-6.634 -9.226,-7.636 -8.649,-8.595C-8.072,-9.555 -7.29,-10.306 -6.343,-10.89C-5.354,-11.432 -4.324,-11.724 -3.171,-11.724C-2.018,-11.724 -0.947,-11.432 0,-10.89M-6.013,-10.264C-6.878,-9.763 -7.537,-9.096 -8.072,-8.261C-8.567,-7.427 -8.814,-6.467 -8.814,-5.466C-8.814,-4.465 -8.567,-3.547 -8.072,-2.671C-7.578,-1.836 -6.878,-1.127 -6.013,-0.626C-5.148,-0.126 -4.201,0.125 -3.212,0.125C-2.224,0.125 -1.277,-0.126 -0.412,-0.626C0.453,-1.127 1.112,-1.794 1.647,-2.671C2.142,-3.505 2.389,-4.465 2.389,-5.466C2.389,-6.467 2.142,-7.385 1.647,-8.261C1.153,-9.096 0.453,-9.763 -0.412,-10.264C-1.277,-10.765 -2.224,-11.015 -3.212,-11.015C-4.201,-11.015 -5.148,-10.765 -6.013,-10.264" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,275.0486,329.5892)">
+                <path d="M0,8.72C0.741,9.471 1.771,9.847 3.13,9.847C4.489,9.847 5.478,9.471 6.219,8.72C6.96,7.969 7.331,6.884 7.331,5.507L7.331,-1.878L8.072,-1.878L8.072,5.507C8.072,7.135 7.661,8.386 6.754,9.262C5.89,10.139 4.654,10.598 3.089,10.598C1.524,10.598 0.288,10.139 -0.577,9.262C-1.441,8.386 -1.895,7.135 -1.895,5.507L-1.895,-1.878L-1.153,-1.878L-1.153,5.507C-1.153,6.884 -0.783,7.969 -0.041,8.72L0,8.72Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,286.9509,341.9805)">
+                <path d="M0,-2.837C0,-2.837 0.165,-2.545 0.165,-2.378C0.165,-2.253 0.165,-2.169 0.082,-2.044C0.041,-1.919 0,-1.836 0,-1.794L-0.824,0.209L-1.318,0.209L-0.659,-1.794C-0.659,-1.794 -0.865,-1.919 -0.947,-2.044C-1.03,-2.169 -1.071,-2.253 -1.071,-2.42C-1.071,-2.587 -1.03,-2.754 -0.906,-2.879C-0.783,-3.004 -0.659,-3.046 -0.494,-3.046C-0.329,-3.046 -0.206,-3.004 -0.082,-2.879L0,-2.837Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,303.2605,339.2692)">
+                <path d="M0,-10.765C0.947,-10.223 1.73,-9.472 2.306,-8.512C2.883,-7.552 3.13,-6.509 3.13,-5.383C3.13,-4.256 2.842,-3.213 2.306,-2.254C1.771,-1.294 0.988,-0.543 0,-0.001C-0.988,0.542 -2.018,0.834 -3.171,0.834L-8.031,0.834L-8.031,-11.599L-3.171,-11.599C-2.018,-11.599 -0.988,-11.307 0,-10.765M-0.371,-0.626C0.494,-1.127 1.153,-1.795 1.647,-2.629C2.142,-3.464 2.389,-4.381 2.389,-5.383C2.389,-6.384 2.142,-7.302 1.647,-8.136C1.153,-8.971 0.494,-9.638 -0.371,-10.139C-1.236,-10.64 -2.142,-10.89 -3.171,-10.89L-7.29,-10.89L-7.29,0.083L-3.13,0.083C-2.142,0.083 -1.194,-0.167 -0.329,-0.668L-0.371,-0.626Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,317.5515,327.67)">
+                <path d="M0,12.433L-2.883,8.219C-3.171,8.261 -3.501,8.302 -3.913,8.302L-7.496,8.302L-7.496,12.433L-8.237,12.433L-8.237,0L-3.913,0C-2.389,0 -1.236,0.375 -0.412,1.084C0.412,1.794 0.824,2.795 0.824,4.088C0.824,5.132 0.577,6.008 0.041,6.675C-0.453,7.343 -1.236,7.802 -2.224,8.052L0.865,12.391L0,12.391L0,12.433ZM-3.913,7.551C-2.636,7.551 -1.647,7.259 -0.947,6.675C-0.247,6.091 0.082,5.215 0.082,4.13C0.082,3.045 -0.247,2.211 -0.947,1.627C-1.647,1.043 -2.636,0.751 -3.913,0.751L-7.537,0.751L-7.537,7.593L-3.913,7.593L-3.913,7.551Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,0,70.081)">
+                <rect x="321.959" y="257.589" width="0.741" height="12.433" style="fill:white;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,324.9657,340.1027)">
+                <path d="M-0.041,-12.433L0.824,-12.433L5.478,-0.918L10.132,-12.433L10.955,-12.433L5.848,0L5.066,0L-0.041,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,338.1438,340.0195)">
+                <path d="M0,-12.35L7.908,-12.35L7.908,-11.641L0.741,-11.641L0.741,-6.676L7.125,-6.676L7.125,-5.925L0.741,-5.925L0.741,-0.668L8.155,-0.668L8.155,0.042L0,0.042L0,-12.392L0,-12.35Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,358.5325,340.1027)">
+                <path d="M0,-12.433L0.7,-12.433L0.7,0L-0.165,0L-8.32,-11.307L-8.32,0L-9.061,0L-9.061,-12.433L-8.196,-12.433L0,-1.126L0,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,376.3642,339.2692)">
+                <path d="M0,-10.765C0.659,-10.223 1.03,-9.472 1.03,-8.512C1.03,-7.761 0.824,-7.093 0.412,-6.593C0,-6.092 -0.577,-5.758 -1.318,-5.633C-0.371,-5.508 0.371,-5.174 0.865,-4.632C1.4,-4.089 1.647,-3.38 1.647,-2.504C1.647,-1.461 1.277,-0.626 0.494,-0.042C-0.288,0.542 -1.359,0.834 -2.759,0.834L-7.825,0.834L-7.825,-11.599L-2.801,-11.599C-1.606,-11.599 -0.659,-11.349 0,-10.807L0,-10.765ZM-0.577,-6.593C-0.041,-7.01 0.247,-7.636 0.247,-8.429C0.247,-9.221 -0.041,-9.805 -0.577,-10.223C-1.112,-10.64 -1.895,-10.848 -2.883,-10.848L-7.125,-10.848L-7.125,-5.925L-2.883,-5.925C-1.895,-5.925 -1.153,-6.134 -0.577,-6.551L-0.577,-6.593ZM-0.124,-0.585C0.535,-1.044 0.865,-1.711 0.865,-2.587C0.865,-3.464 0.535,-4.089 -0.124,-4.548C-0.783,-5.007 -1.689,-5.216 -2.883,-5.216L-7.125,-5.216L-7.125,0.083L-2.883,0.083C-1.689,0.083 -0.783,-0.126 -0.124,-0.585" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,389.7495,340.1027)">
+                <path d="M0,-12.433L-4.86,-4.547L-4.86,0L-5.56,0L-5.56,-4.506L-10.461,-12.433L-9.679,-12.433L-5.189,-5.465L-0.783,-12.433L0,-12.433Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,398.565,329.5892)">
+                <path d="M0,8.72C0.741,9.471 1.771,9.847 3.13,9.847C4.489,9.847 5.478,9.471 6.219,8.72C6.96,7.969 7.331,6.884 7.331,5.507L7.331,-1.878L8.072,-1.878L8.072,5.507C8.072,7.135 7.661,8.386 6.754,9.262C5.89,10.139 4.654,10.598 3.089,10.598C1.524,10.598 0.288,10.139 -0.577,9.262C-1.441,8.386 -1.895,7.135 -1.895,5.507L-1.895,-1.878L-1.153,-1.878L-1.153,5.507C-1.153,6.884 -0.783,7.969 -0.041,8.72L0,8.72Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(1,0,0,1,415.4508,339.1019)">
+                <path d="M0,-10.514C-0.577,-10.681 -1.153,-10.764 -1.689,-10.764C-2.677,-10.764 -3.418,-10.556 -4.036,-10.18C-4.654,-9.805 -4.901,-9.262 -4.901,-8.636C-4.901,-8.052 -4.736,-7.593 -4.448,-7.26C-4.16,-6.884 -3.789,-6.634 -3.336,-6.425C-2.883,-6.217 -2.306,-6.008 -1.565,-5.758C-0.741,-5.507 -0.082,-5.257 0.453,-5.048C0.947,-4.798 1.4,-4.464 1.771,-4.005C2.142,-3.546 2.306,-2.962 2.306,-2.211C2.306,-1.585 2.142,-1.001 1.771,-0.501C1.4,-0 0.906,0.376 0.288,0.626C-0.371,0.876 -1.112,1.043 -1.936,1.043C-2.759,1.043 -3.542,0.876 -4.325,0.542C-5.107,0.209 -5.766,-0.209 -6.301,-0.793L-5.931,-1.46C-5.437,-0.918 -4.819,-0.501 -4.119,-0.209C-3.377,0.084 -2.677,0.25 -1.936,0.25C-0.865,0.25 -0.041,0.042 0.577,-0.417C1.194,-0.876 1.524,-1.46 1.524,-2.211C1.524,-2.795 1.359,-3.254 1.071,-3.63C0.783,-4.005 0.371,-4.256 -0.041,-4.464C-0.494,-4.673 -1.112,-4.881 -1.853,-5.09C-2.677,-5.34 -3.377,-5.591 -3.871,-5.841C-4.366,-6.091 -4.778,-6.425 -5.148,-6.842C-5.478,-7.301 -5.684,-7.885 -5.684,-8.595C-5.684,-9.179 -5.519,-9.721 -5.189,-10.139C-4.86,-10.597 -4.366,-10.931 -3.789,-11.182C-3.212,-11.432 -2.471,-11.557 -1.689,-11.557C-1.071,-11.557 -0.453,-11.474 0.165,-11.265C0.783,-11.056 1.318,-10.848 1.812,-10.514L1.483,-9.846C1.03,-10.139 0.535,-10.347 -0.041,-10.514L0,-10.514Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(32.006542,-58.642864,-58.642864,-32.006542,243.672953,222.986535)">
+                <path d="M1.016,0.032C0.987,0.074 0.954,0.113 0.918,0.148C0.777,0.284 0.592,0.361 0.401,0.369C0.264,0.375 0.125,0.345 -0.003,0.275C-0.03,0.26 -0.057,0.243 -0.081,0.226C-0.083,0.225 -0.082,0.222 -0.08,0.222C0.02,0.213 0.117,0.183 0.205,0.134C0.306,0.079 0.395,-0 0.462,-0.101C0.471,-0.115 0.481,-0.13 0.489,-0.145C0.491,-0.149 0.494,-0.153 0.496,-0.158C0.509,-0.182 0.521,-0.207 0.531,-0.232C0.534,-0.239 0.537,-0.245 0.539,-0.252C0.549,-0.277 0.557,-0.302 0.563,-0.327C0.571,-0.357 0.604,-0.371 0.631,-0.356L1.051,-0.127C1.076,-0.114 1.085,-0.083 1.072,-0.058L1.064,-0.045C1.05,-0.018 1.033,0.008 1.016,0.032Z" style="fill:url(#giua__Linear1);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(-57.053318,40.663311,40.663311,57.053318,334.099255,215.400502)">
+                <path d="M-0.043,-0.082C0.077,-0.04 0.208,-0.03 0.336,-0.052C0.404,-0.063 0.471,-0.084 0.535,-0.113C0.55,-0.12 0.565,-0.128 0.579,-0.136C0.6,-0.147 0.62,-0.159 0.639,-0.171C0.647,-0.177 0.655,-0.182 0.663,-0.188C0.677,-0.198 0.691,-0.208 0.704,-0.219C0.714,-0.227 0.725,-0.236 0.735,-0.245C0.741,-0.251 0.748,-0.257 0.754,-0.264C0.762,-0.271 0.77,-0.279 0.777,-0.287L0.777,-0.287L0.795,-0.306C0.803,-0.315 0.819,-0.315 0.827,-0.304L1.105,0.087C1.113,0.098 1.111,0.113 1.1,0.121L1.027,0.173C0.999,0.193 0.969,0.21 0.938,0.224C0.912,0.236 0.885,0.246 0.858,0.256C0.739,0.298 0.612,0.308 0.491,0.289C0.3,0.259 0.121,0.156 0,-0.013L-0.051,-0.084C-0.048,-0.083 -0.046,-0.083 -0.043,-0.082Z" style="fill:url(#giua__Linear2);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(66.155853,-33.683395,-33.683395,-66.155853,308.603933,195.835889)">
+                <path d="M0.606,0.585C0.578,0.599 0.548,0.611 0.518,0.619C0.348,0.665 0.166,0.61 0.052,0.478C0.041,0.465 0.032,0.451 0.024,0.436L-0.281,-0.164C-0.308,-0.216 -0.357,-0.254 -0.415,-0.264C-0.44,-0.268 -0.465,-0.268 -0.49,-0.264C-0.515,-0.26 -0.539,-0.253 -0.562,-0.241C-0.569,-0.237 -0.573,-0.235 -0.579,-0.232C-0.571,-0.238 -0.563,-0.244 -0.554,-0.25C-0.548,-0.255 -0.541,-0.259 -0.533,-0.264C-0.523,-0.271 -0.512,-0.278 -0.501,-0.285C-0.487,-0.293 -0.473,-0.3 -0.459,-0.308C-0.45,-0.312 -0.442,-0.316 -0.434,-0.32C-0.414,-0.329 -0.394,-0.337 -0.373,-0.345C-0.359,-0.35 -0.344,-0.355 -0.329,-0.359C-0.265,-0.378 -0.199,-0.388 -0.134,-0.389C-0.012,-0.392 0.109,-0.364 0.215,-0.308C0.218,-0.307 0.22,-0.306 0.222,-0.305L0.642,0.521C0.653,0.541 0.645,0.565 0.625,0.576L0.606,0.585Z" style="fill:url(#giua__Radial3);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(4.166667,0,0,4.166667,0,0)">
+            <g transform="matrix(13.13684,59.270142,59.270142,-13.13684,248.195731,201.989484)">
+                <path d="M0.021,0.327C0.017,0.308 0.014,0.289 0.012,0.271C-0.005,0.138 0.011,0.008 0.054,-0.11C0.093,-0.216 0.154,-0.313 0.232,-0.394C0.561,-0.425 0.874,-0.262 1.044,0.013C1.052,0.025 1.045,0.042 1.031,0.045L0.286,0.21C0.171,0.235 0.086,0.323 0.062,0.427C0.06,0.435 0.058,0.443 0.057,0.452C0.054,0.444 0.052,0.437 0.049,0.43C0.039,0.401 0.031,0.372 0.024,0.342C0.023,0.337 0.022,0.332 0.021,0.327Z" style="fill:url(#giua__Linear4);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="giua__Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,0.003767)"><stop offset="0" style="stop-color:rgb(41,168,246);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(54,112,247);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(68,53,249);stop-opacity:1"/></linearGradient>
+        <linearGradient id="giua__Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,-0,-0,-1,0,-0.007014)"><stop offset="0" style="stop-color:rgb(17,143,244);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(21,182,244);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(25,226,245);stop-opacity:1"/></linearGradient>
+        <radialGradient id="giua__Radial3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.469186,-0.172814,-0.147565,-1.254533,-0.469186,0.446262)"><stop offset="0" style="stop-color:rgb(15,94,242);stop-opacity:1"/><stop offset="0.52" style="stop-color:rgb(14,140,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(5,30,238);stop-opacity:1"/></radialGradient>
+        <linearGradient id="giua__Linear4" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,-0,-0,-1,0,0.026885)"><stop offset="0" style="stop-color:rgb(25,52,242);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(31,150,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(33,217,246);stop-opacity:1"/></linearGradient>
+    </defs>
+            </svg>
+          <span class="slot-label">Logo — Giữa</span>
+        </div>
+      </div>
+
+      <!-- Block icon riêng: text mô tả bên trái, icon vẽ nét bên phải (kỹ thuật giống hero) -->
+      <div class="logo-feature reveal">
+        <div class="logo-feature-text">
+          <h4>The Icon Mark</h4>
+          <p>Standalone symbol built from two flowing, interlocking strokes — used for avatars, favicons, watermarks, and any compact placement where the full wordmark doesn't fit.</p>
+        </div>
+        <div class="logo-feature-icon">
+          <svg class="feat-icon" viewBox="0 0 417 512" xmlns="http://www.w3.org/2000/svg">
+            <g transform="matrix(1,0,0,1,-191.707,-144.17)">
+        <g transform="matrix(50.775303,229.08548,229.08548,-50.775303,283.091654,396.440912)">
+            <path d="M0.022,0.294C0.018,0.275 0.015,0.256 0.012,0.236C-0.006,0.101 0.011,-0.032 0.055,-0.153C0.095,-0.262 0.157,-0.362 0.237,-0.445C0.554,-0.474 0.856,-0.329 1.036,-0.078C1.062,-0.042 1.043,0.008 1,0.018L0.293,0.174C0.267,0.18 0.232,0.192 0.197,0.216C0.185,0.224 0.101,0.284 0.082,0.396C0.075,0.438 0.083,0.476 0.088,0.5C0.085,0.492 0.053,0.407 0.05,0.399C0.04,0.37 0.032,0.34 0.025,0.31C0.024,0.305 0.023,0.299 0.022,0.294Z" style="fill:url(#icon2__Linear1);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(127.704277,-233.98169,-233.98169,-127.704277,254.724878,482.174827)">
+            <path d="M1.017,0.038C0.988,0.08 0.955,0.118 0.92,0.152C0.78,0.285 0.595,0.36 0.404,0.365C0.267,0.37 0.127,0.339 -0.002,0.268C-0.03,0.253 -0.056,0.237 -0.081,0.219C-0.083,0.218 -0.082,0.215 -0.08,0.215C0.02,0.207 0.117,0.178 0.205,0.131C0.306,0.077 0.394,-0 0.46,-0.099C0.47,-0.113 0.479,-0.128 0.487,-0.143C0.489,-0.147 0.492,-0.151 0.494,-0.155C0.507,-0.179 0.518,-0.203 0.529,-0.228C0.531,-0.235 0.534,-0.241 0.536,-0.248C0.545,-0.272 0.553,-0.297 0.559,-0.322C0.567,-0.351 0.6,-0.365 0.627,-0.35L1.051,-0.119C1.075,-0.106 1.085,-0.075 1.072,-0.051L1.065,-0.038C1.05,-0.011 1.034,0.014 1.017,0.038Z" style="fill:url(#icon2__Linear2);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(-221.880249,158.139542,158.139542,221.880249,610.557626,453.052096)">
+            <path d="M-0.043,-0.083C0.078,-0.041 0.21,-0.03 0.34,-0.052C0.408,-0.064 0.476,-0.084 0.541,-0.115C0.556,-0.122 0.571,-0.129 0.586,-0.137C0.606,-0.148 0.626,-0.16 0.646,-0.173C0.654,-0.179 0.662,-0.184 0.67,-0.19C0.684,-0.2 0.698,-0.21 0.711,-0.221C0.722,-0.23 0.732,-0.239 0.742,-0.248C0.749,-0.254 0.756,-0.26 0.762,-0.266C0.77,-0.274 0.778,-0.281 0.785,-0.289L0.803,-0.309C0.812,-0.318 0.827,-0.318 0.835,-0.307L1.1,0.065C1.11,0.078 1.112,0.096 1.107,0.111C1.102,0.128 1.089,0.138 1.075,0.148C1.047,0.167 1.019,0.188 0.989,0.205C0.951,0.227 0.909,0.244 0.867,0.258C0.746,0.301 0.619,0.311 0.496,0.292C0.303,0.262 0.122,0.157 0.001,-0.013L-0.051,-0.085C-0.048,-0.084 -0.046,-0.083 -0.043,-0.083Z" style="fill:url(#icon2__Linear3);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(259.783295,-132.269211,-132.269211,-259.783295,509.199458,374.0784)">
+            <path d="M0.518,0.613C0.324,0.665 0.166,0.601 0.052,0.47C0.041,0.457 0.032,0.442 0.024,0.427L-0.281,-0.172C-0.308,-0.225 -0.357,-0.263 -0.415,-0.272C-0.44,-0.276 -0.465,-0.277 -0.49,-0.273C-0.515,-0.269 -0.539,-0.261 -0.562,-0.249C-0.569,-0.246 -0.573,-0.244 -0.579,-0.24C-0.571,-0.246 -0.563,-0.252 -0.554,-0.258C-0.548,-0.263 -0.541,-0.268 -0.533,-0.273C-0.523,-0.28 -0.512,-0.286 -0.501,-0.293C-0.487,-0.301 -0.473,-0.309 -0.459,-0.316C-0.45,-0.32 -0.442,-0.324 -0.434,-0.328C-0.414,-0.338 -0.394,-0.346 -0.373,-0.353C-0.359,-0.359 -0.344,-0.364 -0.329,-0.368C-0.265,-0.387 -0.199,-0.397 -0.134,-0.398C-0.012,-0.4 0.109,-0.372 0.215,-0.317C0.218,-0.316 0.22,-0.315 0.222,-0.313L0.633,0.494C0.648,0.524 0.636,0.561 0.606,0.576C0.578,0.591 0.548,0.605 0.518,0.613Z" style="fill:url(#icon2__Radial4);fill-rule:nonzero;"/>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="icon2__Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,0.02563)"><stop offset="0" style="stop-color:rgb(25,52,242);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(31,150,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(33,217,246);stop-opacity:1"/></linearGradient>
+        <linearGradient id="icon2__Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,0.004855)"><stop offset="0" style="stop-color:rgb(41,168,246);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(54,112,247);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(68,53,249);stop-opacity:1"/></linearGradient>
+        <linearGradient id="icon2__Linear3" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,-1,0,-0.007092)"><stop offset="0" style="stop-color:rgb(17,143,244);stop-opacity:1"/><stop offset="0.47" style="stop-color:rgb(21,182,244);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(25,226,245);stop-opacity:1"/></linearGradient>
+        <radialGradient id="icon2__Radial4" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.469186,-0.172814,-0.147565,-1.254533,-0.469186,0.437708)"><stop offset="0" style="stop-color:rgb(15,94,242);stop-opacity:1"/><stop offset="0.52" style="stop-color:rgb(14,140,243);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(5,30,238);stop-opacity:1"/></radialGradient>
+    </defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BRAND COLORS ============ -->
+  <section style="padding-top:0;">
+    <div class="section-inner">
+      <div class="eyebrow reveal">Brand Colors</div>
+      <div class="color-grid reveal">
+        <div class="color-chip" style="background:#0118d8;color:#fff;">
+          <div class="name">Deep Blue</div>C:91 M:82 Y:0 K:0<br>HEX 0118D8<br>PMS 2736 C
+        </div>
+        <div class="color-chip" style="background:#1f61e5;color:#fff;">
+          <div class="name">Royal Blue</div>C:82 M:64 Y:0 K:0<br>HEX 1F61E5<br>PMS 2727 C
+        </div>
+        <div class="color-chip" style="background:#00a3e1;color:#02040a;">
+          <div class="name">Sky Blue</div>C:73 M:19 Y:0 K:0<br>HEX 00A3E1<br>PMS 299 C
+        </div>
+        <div class="color-chip" style="background:#03d8e8;color:#02040a;">
+          <div class="name">Bright Cyan</div>C:62 M:0 Y:14 K:0<br>HEX 03D8E8<br>PMS 3252 C
+        </div>
+        <div class="color-chip" style="background:#373a36;color:#fff;">
+          <div class="name">Charcoal</div>C:69 M:60 Y:64 K:54<br>HEX 373A36<br>PMS 447 C
+        </div>
+        <div class="color-chip" style="background:#ffffff;color:#02040a;border:1px solid var(--line);">
+          <div class="name">White</div>C:0 M:0 Y:0 K:0<br>HEX FFFFFF<br>PMS 000 C
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TYPOGRAPHY ============ -->
+  <section style="padding-top:0;">
+    <div class="section-inner">
+      <div class="eyebrow reveal">Typography</div>
+
+      <div class="type-block reveal">
+        <div class="type-block-head"><b>Font — Montserrat.</b> Brand Typeface — Reserved for "DETAILERS MOVEMENT" wordmark & brand lockups only.</div>
+        <div class="type-samples">
+          <div class="type-sample">
+            <div class="weight-label">Montserrat — Medium</div>
+            <div class="sample-line" style="font-family:'Montserrat',sans-serif;font-weight:500;">Aa Bb Cc</div>
+            <div class="sample-nums" style="font-family:'Montserrat',sans-serif;font-weight:500;">1234567890</div>
+            <div class="sample-para">Body copy, captions, and secondary labels.</div>
+          </div>
+          <div class="type-sample">
+            <div class="weight-label">Montserrat — Bold</div>
+            <div class="sample-line" style="font-family:'Montserrat',sans-serif;font-weight:700;">Aa Bb Cc</div>
+            <div class="sample-nums" style="font-family:'Montserrat',sans-serif;font-weight:700;">1234567890</div>
+            <div class="sample-para">UI labels, callouts, and supporting text.</div>
+          </div>
+          <div class="type-sample">
+            <div class="weight-label">Montserrat — ExtraBold</div>
+            <div class="sample-line" style="font-family:'Montserrat',sans-serif;font-weight:800;">Aa Bb Cc</div>
+            <div class="sample-nums" style="font-family:'Montserrat',sans-serif;font-weight:800;">1234567890</div>
+            <div class="sample-para">Section headings and pull quotes.</div>
+          </div>
+          <div class="type-sample">
+            <div class="weight-label">Montserrat — Black</div>
+            <div class="sample-line" style="font-family:'Montserrat',sans-serif;font-weight:900;">Aa Bb Cc</div>
+            <div class="sample-nums" style="font-family:'Montserrat',sans-serif;font-weight:900;">1234567890</div>
+            <div class="sample-para">Display headlines and brand name lockup.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- <p class="type-note reveal">* Montserrat lấy đúng font free trên Google Fonts, không cần thay thế.</p>-->
+    </div>
+  </section>
+
+  <div class="marquee-band">
+    <div class="marquee-track">
+      <span>OWNED BY YOU</span><span>DRIVEN BY US</span><span>PRECISION</span><span>MOTION</span><span>COMMUNITY</span>
+      <span>OWNED BY YOU</span><span>DRIVEN BY US</span><span>PRECISION</span><span>MOTION</span><span>COMMUNITY</span>
+    </div>
+  </div>
+
+  <!-- ============ FILMS (horizontal) ============ -->
+  <section>
+    <div class="section-inner">
+      <div class="eyebrow reveal">Films</div>
+      <div class="group-label reveal"><b>DMI</b> — brand films produced for our own agency</div>
+
+      <div class="reel feature reveal">
+        <div class="reel-head">
+          <span class="reel-index">Video — 01</span>
+          <span class="reel-title">DMI Showreel</span>
+          <span class="reel-duration">00:34</span>
+        </div>
+        <div class="reel-frame" data-yt="eQu6h1pfivM" data-thumb="" onclick="playReel(this)">
+          <span class="feature-badge">Showreel — Watch First</span>
+          <img class="reel-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+        </div>
+        <div class="reel-caption"><span class="note">A fast-cut compilation of our sharpest motion graphics and brand visuals — every reel's best frame, stitched into one high-energy showcase.</span><span class="tags">21:9 · 1080p</span></div>
+      </div>
+
+      <div class="reel reveal">
+        <div class="reel-head">
+          <span class="reel-index">Video — 02</span>
+          <span class="reel-title">DMI Report Homepage</span>
+          <span class="reel-duration">1:59</span>
+        </div>
+        <div class="reel-frame" data-yt="kc3ATl5Gh58" data-thumb="" onclick="playReel(this)"><img class="reel-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+        <div class="reel-caption"><span class="note">Most shop owners can't tell if their marketing is actually working. This walks through DMI's live reporting dashboard — rankings, traffic, cost per lead, and appointments, all in one clear view.</span><span class="tags">16:9 · 1080p</span></div>
+      </div>
+
+      <div class="reel split reveal">
+        <div class="split-body">
+          <div class="split-text">
+            <div class="split-head">
+              <span class="reel-index">Video — 03</span>
+              <span class="reel-duration">1:15</span>
+            </div>
+            <span class="reel-title">DMI - Summer package Campaign</span>
+            <span class="note">The most expensive website isn't the one you pay for — it's the one quietly losing you customers. Introducing DMI's Summer Package: trust, visibility, and conversion, built into one site.</span>
+            <span class="tags">3:4 · 1080p</span>
+          </div>
+          <div class="reel-frame" data-yt="jZZpfbto53c" data-thumb="" onclick="playReel(this)"><img class="reel-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+        </div>
+      </div>
+
+      <div class="group-label reveal"><b>AI Generated</b> — experimental pieces made with AI video tools</div>
+
+      <div class="reel reveal">
+        <div class="reel-head">
+          <span class="reel-index">Video — 04</span>
+          <span class="reel-title">Sam the Sticky Note Addict</span>
+          <span class="reel-duration">1:00</span>
+        </div>
+        <div class="reel-frame" data-yt="JO7puNglpOI" data-thumb="" onclick="playReel(this)">
+          <span class="ai-badge">AI Generated</span>
+          <img class="reel-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+        </div>
+        <div class="reel-caption"><span class="note">Sam runs his shop on color-coded sticky notes — until even he can't remember what the colors mean. A CRM built for detailers, made for 2026, not for guesswork.</span><span class="tags">16:9 · AI</span></div>
+      </div>
+
+      <div class="reel reveal">
+        <div class="reel-head">
+          <span class="reel-index">Video — 05</span>
+          <span class="reel-title">My Nephew Can Do It!</span>
+          <span class="reel-duration">1:04</span>
+        </div>
+        <div class="reel-frame" data-yt="RKZE4T0TuU8" data-thumb="" onclick="playReel(this)">
+          <span class="ai-badge">AI Generated</span>
+          <img class="reel-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+        </div>
+        <div class="reel-caption"><span class="note">Sure, your nephew can post for free. But viral doesn't book cars. See how DMI turns social media into actual appointments — built on intent, not just likes.</span><span class="tags">16:9 · AI</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SOCIAL CUTS (vertical) ============ -->
+  <section style="padding-top:0;">
+    <div class="section-inner">
+      <div class="eyebrow reveal">Social Cuts</div>
+      <div class="group-label reveal"><b>DMI</b> — vertical cuts made for our own brand channels</div>
+      <div class="vertical-strip reveal">
+        <div class="v-card">
+          <div class="v-frame" data-yt="aYiTOat2u_8" data-thumb="" onclick="openVLightbox(0)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Clip 01</div><div class="v-tag">9:16 · 1:30</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="1bob2WjRWyE" data-thumb="" onclick="openVLightbox(1)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Clip 02</div><div class="v-tag">9:16 · 1:31</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="msCSUOGtxkg" data-thumb="" onclick="openVLightbox(2)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Clip 03</div><div class="v-tag">9:16 · 0:27</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="U8r7M0p5ltw" data-thumb="" onclick="openVLightbox(3)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Clip 04</div><div class="v-tag">9:16 · 0:33</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="f-bmJN1kQi8" data-thumb="" onclick="openVLightbox(4)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Clip 05</div><div class="v-tag">9:16 · 1:04</div></div>
+        </div>
+      </div>
+
+      <div class="group-label reveal"><b>Client Work</b> — vertical cuts produced for agency clients</div>
+      <div class="vertical-strip reveal">
+        <div class="v-card">
+          <div class="v-frame" data-yt="uY9gIza2eUE" data-thumb="" onclick="openVLightbox(5)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Detail Geex</div><div class="v-tag">0:48</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="hsT5zQedBdw" data-thumb="" onclick="openVLightbox(6)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Portland Pro Detail</div><div class="v-tag">0:33</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="EDqW_u37ijc" data-thumb="" onclick="openVLightbox(7)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">(AI) THE Beyond Clean</div><div class="v-tag">0:33</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="B56G-XuUbG8" data-thumb="" onclick="openVLightbox(8)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">DYNAMIC M DETAIL</div><div class="v-tag">0:42</div></div>
+        </div>
+        <div class="v-card">
+          <div class="v-frame" data-yt="wZHFh_5_WQY" data-thumb="" onclick="openVLightbox(9)"><img class="v-thumb" alt="" /><div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="v-caption"><div class="v-title">Attention II Detail</div><div class="v-tag">0:28</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER / CTA ============ -->
+  <footer>
+    <div class="cta">
+      <h3 class="reveal rt">Collaborate on the next project?</h3>
+      <div class="cta-links reveal">
+        <a href="mailto:loud.havefun@gmail.com">Email — cloud.havefun@gmail.com</a>
+        <a href="https://www.linkedin.com/in/cloud2002/">Linkedin - Diep Ong Dai Quang</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 — CLOUD</span>
+      <span id="foot-time">00:00:00</span>
+    </div>
+  </footer>
+
+<script>
+  const navTime = document.getElementById('nav-time');
+  const footTime = document.getElementById('foot-time');
+
+  function onScroll(){
+    const max = document.body.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? window.scrollY / max : 0;
+    document.documentElement.style.setProperty('--scroll-pct', (pct*100)+'%');
+    navTime.textContent = Math.round(pct*100) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  let start = Date.now();
+  setInterval(()=>{
+    const elapsed = Math.floor((Date.now()-start)/1000);
+    const h = String(Math.floor(elapsed/3600)).padStart(2,'0');
+    const m = String(Math.floor((elapsed%3600)/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    footTime.textContent = h+':'+m+':'+s;
+  }, 1000);
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // Nhúng video YouTube phát inline (dùng khi có video thật):
+  // thêm data-yt="VIDEO_ID" vào .reel-frame / .v-frame rồi gọi onclick="playInline(this)"
+  function playInline(el){
+    const id = el.getAttribute('data-yt');
+    if(!id) return;
+    el.innerHTML = '<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;"></iframe>';
+  }
+</script>
+<script>
+  /* ===== Page transition: fade vào / fade ra ===== */
+  (function(){
+    var OWN_BG   = '#060911';
+    var INDEX_BG = '#000000';
+    var fade = document.getElementById('page-fade');
+    if(!fade) return;
+
+    function revealPage(){
+      fade.style.backgroundColor = OWN_BG;
+      // đợi 1 nhịp cho màu nền hiện ra trước, rồi mới mờ dần để lộ nội dung bên trong
+      setTimeout(function(){ fade.classList.remove('cover'); }, 180);
+    }
+
+    if(document.readyState === 'complete'){ revealPage(); }
+    else{ window.addEventListener('load', revealPage); }
+    // chốt chặn: dù ảnh/font tải lỗi cũng không kẹt màn hình phủ màu
+    setTimeout(function(){ fade.classList.remove('cover'); }, 4000);
+
+    /* Trình duyệt lưu trang trong bộ nhớ đệm khi bấm nút Back -> phải gỡ lớp phủ,
+       nếu không quay lại sẽ thấy màn hình 1 màu đứng im. */
+    window.addEventListener('pageshow', function(e){
+      if(e.persisted){ revealPage(); }
+    });
+
+    /* Rời trang: nội dung mờ đi (phủ màu nền trang hiện tại) -> đổi sang màu nền trang đích -> mới chuyển */
+    function leaveTo(href, targetBg){
+      fade.style.backgroundColor = OWN_BG;
+      fade.classList.add('cover');
+      setTimeout(function(){ fade.style.backgroundColor = targetBg; }, 430);
+      setTimeout(function(){ window.location.href = href; }, 880);
+    }
+
+    document.querySelectorAll('a[data-pt]').forEach(function(link){
+      link.addEventListener('click', function(e){
+        var href = link.getAttribute('href');
+        if(!href || href.charAt(0) === '#') return;
+        // tôn trọng Ctrl/Cmd/Shift+click và chuột giữa (mở tab mới)
+        if(e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        leaveTo(href, link.getAttribute('data-pt') || INDEX_BG);
+      });
+    });
+  })();
+</script>
+
+<!-- Lightbox xem video dọc (Social Cuts) -->
+<div id="vlightbox" onclick="closeVLightbox()">
+  <div class="vlb-close" onclick="closeVLightbox()">Close &#10005;</div>
+  <div class="vlb-stage" onclick="event.stopPropagation()">
+    <iframe id="vlb-frame" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    <div class="vlb-empty" id="vlb-empty">Chua gan link video cho clip nay.<br>Dien ID YouTube vao thuoc tinh data-yt cua the .v-frame tuong ung.</div>
+  </div>
+  <div class="vlb-controls" onclick="event.stopPropagation()">
+    <div class="vlb-nav vlb-prev" onclick="navVLightbox(-1)">&#8249;</div>
+    <div class="vlb-caption" id="vlb-caption"></div>
+    <div class="vlb-nav vlb-next" onclick="navVLightbox(1)">&#8250;</div>
+  </div>
+</div>
+
+<script>
+  /* ================= Video: thumbnail YouTube + phat inline + lightbox doc ================= */
+  (function(){
+    /* Lay anh thumbnail tu ID YouTube. Neu co data-thumb (anh tu chon) thi uu tien dung anh do.
+       maxresdefault khong phai video nao cung co -> onerror tu dong lui ve hqdefault. */
+    function applyThumb(frame, imgEl){
+      var custom = (frame.getAttribute('data-thumb') || '').trim();
+      var id = (frame.getAttribute('data-yt') || '').trim();
+      if(custom){
+        imgEl.src = custom;
+        frame.classList.add('has-thumb');
+        return;
+      }
+      if(!id) return;                       // chua gan video -> giu khung placeholder nhu cu
+      /* maxresdefault khong phai video nao cung co -> lui ve hqdefault.
+         Neu ca hai deu loi (ID sai / mat mang) -> bo has-thumb de quay ve khung placeholder sach se,
+         thay vi hien icon "anh vo" xau xi. */
+      imgEl.onerror = function(){
+        imgEl.onerror = function(){
+          imgEl.onerror = null;
+          frame.classList.remove('has-thumb');
+        };
+        imgEl.src = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
+      };
+      imgEl.src = 'https://img.youtube.com/vi/' + id + '/maxresdefault.jpg';
+      frame.classList.add('has-thumb');
+    }
+
+    document.querySelectorAll('.reel-frame').forEach(function(f){
+      var img = f.querySelector('.reel-thumb');
+      if(img) applyThumb(f, img);
+    });
+    document.querySelectorAll('.v-frame').forEach(function(f){
+      var img = f.querySelector('.v-thumb');
+      if(img) applyThumb(f, img);
+    });
+  })();
+
+  /* ---------- Video ngang: bam la phat ngay tai o do ---------- */
+  function stopAllReels(){
+    document.querySelectorAll('.reel-frame.playing').forEach(function(f){
+      var ifr = f.querySelector('.reel-player');
+      if(ifr) ifr.remove();               // go han iframe -> video dung hoan toan
+      f.classList.remove('playing');
+    });
+  }
+  function playReel(el){
+    var id = (el.getAttribute('data-yt') || '').trim();
+    if(!id){ return; }                    // chua gan link -> khong lam gi
+    if(el.classList.contains('playing')) return;
+    /* YouTube KHONG tu dong dung cac khung nhung khac -> phai tu dung o day,
+       neu khong bam video thu 2 se bi chong tieng voi video dang phat. */
+    stopAllReels();
+    var ifr = document.createElement('iframe');
+    ifr.className = 'reel-player';
+    ifr.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0&modestbranding=1';
+    ifr.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+    ifr.setAttribute('allowfullscreen', '');
+    el.appendChild(ifr);
+    el.classList.add('playing');
+  }
+
+  /* ---------- Video doc: lightbox co nut dieu huong ---------- */
+  var vFrames = [];
+  var vIndex = 0;
+  document.addEventListener('DOMContentLoaded', function(){
+    vFrames = Array.prototype.slice.call(document.querySelectorAll('.v-frame'));
+  });
+
+  function renderVLightbox(){
+    if(!vFrames.length) vFrames = Array.prototype.slice.call(document.querySelectorAll('.v-frame'));
+    var frame = vFrames[vIndex];
+    var id = (frame.getAttribute('data-yt') || '').trim();
+    var ifr = document.getElementById('vlb-frame');
+    var empty = document.getElementById('vlb-empty');
+    var card = frame.closest('.v-card');
+    var title = card ? card.querySelector('.v-title') : null;
+    var tag = card ? card.querySelector('.v-tag') : null;
+
+    if(id){
+      ifr.style.display = 'block';
+      empty.style.display = 'none';
+      ifr.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0&modestbranding=1';
+    }else{
+      ifr.style.display = 'none';
+      ifr.src = 'about:blank';
+      empty.style.display = 'flex';
+    }
+    document.getElementById('vlb-caption').textContent =
+      (title ? title.textContent : 'Clip') +
+      (tag ? '  \u00B7  ' + tag.textContent : '') +
+      '   ' + (vIndex + 1) + ' / ' + vFrames.length;
+  }
+  function openVLightbox(i){
+    stopAllReels();                        // dang xem video ngang thi dung lai truoc khi mo lightbox
+    if(!vFrames.length) vFrames = Array.prototype.slice.call(document.querySelectorAll('.v-frame'));
+    vIndex = i;
+    document.getElementById('vlightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderVLightbox();
+  }
+  function navVLightbox(dir){
+    vIndex = (vIndex + dir + vFrames.length) % vFrames.length;
+    renderVLightbox();
+  }
+  function closeVLightbox(){
+    document.getElementById('vlightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('vlb-frame').src = 'about:blank';   // dung video khi dong
+  }
+  window.addEventListener('keydown', function(e){
+    var lb = document.getElementById('vlightbox');
+    if(!lb || !lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeVLightbox();
+    if(e.key === 'ArrowLeft') navVLightbox(-1);
+    if(e.key === 'ArrowRight') navVLightbox(1);
+  });
+</script>
+<div id="cur-ring" aria-hidden="true"><span id="cur-label"></span></div>
+<div id="cur-dot" aria-hidden="true"></div>
+<script>
+/* ================= Con trỏ chuột tuỳ biến ================= */
+(function(){
+  if(!window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var ring  = document.getElementById('cur-ring');
+  var dot   = document.getElementById('cur-dot');
+  var label = document.getElementById('cur-label');
+  if(!ring || !dot) return;
+
+  /* Nhận lại vị trí chuột từ trang trước -> qua trang mới con trỏ hiện ngay
+     đúng chỗ cũ (chỉ đổi màu theo trang), không bị nhấp nháy hay mất tiêu. */
+  var mx = window.innerWidth/2, my = window.innerHeight/2, restored = false;
+  try{
+    var saved = sessionStorage.getItem('cursorXY');
+    if(saved){
+      var xy = saved.split(',');
+      mx = parseFloat(xy[0]); my = parseFloat(xy[1]);
+      restored = true;
+    }
+  }catch(e){}
+
+  var rx = mx, ry = my, dx = mx, dy = my;
+  var raf = null, moved = restored;
+
+  function draw(){
+    ring.style.transform = 'translate3d(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px,0)';
+    dot.style.transform  = 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px,0)'
+                         + (dot.classList.contains('is-down') ? ' scale(2.2)' : '');
+  }
+  var lastHit = null;
+  function loop(){
+    rx += (mx - rx) * 0.17;   // vòng to: trễ một nhịp
+    ry += (my - ry) * 0.17;
+    dx += (mx - dx) * 0.55;   // chấm nhỏ: gần như tức thì
+    dy += (my - dy) * 0.55;
+    draw();
+    hitTest();
+    if(Math.abs(mx-rx) < 0.1 && Math.abs(my-ry) < 0.1 && Math.abs(mx-dx) < 0.1){ raf = null; return; }
+    raf = requestAnimationFrame(loop);
+  }
+  function wake(){ if(!raf) raf = requestAnimationFrame(loop); }
+
+  draw();
+  if(restored) document.body.classList.add('cur-on');
+
+  document.addEventListener('mousemove', function(e){
+    mx = e.clientX; my = e.clientY;
+    if(document.body.classList.contains('native-cursor')) document.body.classList.remove('native-cursor');
+    if(!moved){ moved = true; }
+    document.body.classList.add('cur-on');
+    wake();
+  }, {passive:true});
+  document.addEventListener('mouseleave', function(){ document.body.classList.remove('cur-on'); });
+  document.addEventListener('mouseenter', function(){ if(moved) document.body.classList.add('cur-on'); });
+  document.addEventListener('mousedown', function(){ dot.classList.add('is-down'); wake(); });
+  document.addEventListener('mouseup',   function(){ dot.classList.remove('is-down'); wake(); });
+
+  window.addEventListener('pagehide', function(){
+    try{ sessionStorage.setItem('cursorXY', mx + ',' + my); }catch(e){}
+  });
+
+  /* --- đổi hình dạng theo thứ đang rê vào --- */
+  var STATES = ['is-hint','is-view','is-play','is-link'];
+  function setState(state, text){
+    STATES.forEach(function(c){ if(c !== state) ring.classList.remove(c); });
+    if(state) ring.classList.add(state);
+    label.textContent = text || '';
+    ring.classList.toggle('has-label', !!text);
+    dot.classList.toggle('hide-dot', state === 'is-view' || state === 'is-play' || state === 'is-hint');
+  }
+
+  var hintOn = false;
+  function hintState(){ setState(hintOn ? 'is-hint' : null, hintOn ? 'Scroll \u2193' : ''); }
+
+  function applyHover(t){
+    if(!t || !t.closest){ hintState(); return; }
+    // video đang phát -> nhường lại chuột thật cho iframe
+    var playing = t.closest('.reel-frame.playing, .v-frame.playing');
+    if(playing || t.tagName === 'IFRAME'){ document.body.classList.add('native-cursor'); return; }
+    if(t.closest('.reel-frame, .v-frame')){ setState('is-play', 'Play'); return; }
+    if(t.closest('.pg-cell, .process-frames .frame')){ setState('is-view', 'View'); return; }
+    if(t.closest('a, button, [onclick]')){ setState('is-link', ''); return; }
+    hintState();
+  }
+  /* Dò thẳng phần tử nằm dưới con trỏ mỗi khung hình thay vì nghe mouseover/mouseout:
+     mouseover bắn theo thứ tự khó lường khi các khối lồng nhau (đã gặp trường hợp
+     rê vào logo header mà trạng thái vẫn ra "Scroll"). Cách này luôn đúng.
+     Hai phần tử con trỏ đều pointer-events:none nên không tự che chính nó. */
+  function hitTest(){
+    var el = document.elementFromPoint(mx, my);
+    if(el === lastHit) return;
+    lastHit = el;
+    applyHover(el);
+  }
+  window.addEventListener('scroll', function(){ lastHit = null; hitTest(); }, {passive:true});
+
+  function checkHint(){
+    var on = window.scrollY < window.innerHeight * 0.55;
+    if(on === hintOn) return;
+    hintOn = on;
+    if(!ring.classList.contains('is-view') && !ring.classList.contains('is-play') && !ring.classList.contains('is-link')) hintState();
+  }
+  window.addEventListener('scroll', checkHint, {passive:true});
+  checkHint();
+
+  // bấm vào iframe -> mất focus cửa sổ -> trả chuột thật
+  window.addEventListener('blur', function(){
+    if(document.activeElement && document.activeElement.tagName === 'IFRAME'){
+      document.body.classList.add('native-cursor');
+    }
+  });
+})();
+
+/* ================= Chữ sáng dần theo nhịp cuộn =================
+   Vị trí mỗi chữ đo bằng offsetTop cộng dồn rồi cache lại — KHÔNG dùng
+   getBoundingClientRect, vì phải đọc layout từng chữ mỗi khung hình sẽ rất nặng. */
+(function(){
+  var els = document.querySelectorAll('.rt');
+  if(!els.length) return;
+
+  function splitWords(el){
+    var textNodes = [];
+    (function walk(n){
+      for(var c = n.firstChild; c; c = c.nextSibling){
+        if(c.nodeType === 3){ if(c.nodeValue.trim()) textNodes.push(c); }
+        else if(c.nodeType === 1 && c.tagName !== 'BR' && !c.classList.contains('w')) walk(c);
+      }
+    })(el);
+    textNodes.forEach(function(tn){
+      var parts = tn.nodeValue.split(/(\s+)/);
+      var frag = document.createDocumentFragment();
+      parts.forEach(function(p){
+        if(!p) return;
+        if(/^\s+$/.test(p)){ frag.appendChild(document.createTextNode(p)); return; }
+        var sp = document.createElement('span');
+        sp.className = 'w'; sp.textContent = p;
+        frag.appendChild(sp);
+      });
+      tn.parentNode.replaceChild(frag, tn);
+    });
+  }
+
+  var words = [];
+  Array.prototype.forEach.call(els, function(el){
+    splitWords(el);
+    Array.prototype.forEach.call(el.querySelectorAll('.w'), function(w){ words.push({el:w, y:0}); });
+  });
+  if(!words.length) return;
+
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    words.forEach(function(w){ w.el.style.opacity = 1; });
+    return;
+  }
+
+  function docTop(node){ var y = 0; while(node){ y += node.offsetTop; node = node.offsetParent; } return y; }
+  function measure(){
+    words.forEach(function(w){ w.y = docTop(w.el) + w.el.offsetHeight * 0.5; });
+    apply();
+  }
+
+  var MIN = 0.16, LO = 0.86, HI = 0.30, ticking = false;
+  function apply(){
+    var sy = window.scrollY, vh = window.innerHeight;
+    var lo = sy + vh * LO, span = (vh * LO) - (vh * HI);
+    for(var i = 0; i < words.length; i++){
+      var t = (lo - words[i].y) / span;
+      t = t < 0 ? 0 : (t > 1 ? 1 : t);
+      words[i].el.style.opacity = (MIN + (1 - MIN) * t).toFixed(3);
+    }
+    ticking = false;
+  }
+  function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(apply); } }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', measure);
+  window.addEventListener('load', measure);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+  measure();
+})();
+</script>
+</body>
+</html>
